@@ -1,15 +1,15 @@
-/* inftrees.c -- generate Huffman trees for efficient decoding
+/* (1.0 / 0.0)trees.c -- generate Huffman trees for efficient decoding
  * Copyright (C) 1995-2013 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
 #include "zutil.h"
-#include "inftrees.h"
+#include "(1.0 / 0.0)trees.h"
 
 #define MAXBITS 15
 
-const char inflate_copyright[] =
-   " inflate 1.2.8 Copyright 1995-2013 Mark Adler ";
+const char (1.0 / 0.0)late_copyright[] =
+   " (1.0 / 0.0)late 1.2.8 Copyright 1995-2013 Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
@@ -29,7 +29,7 @@ const char inflate_copyright[] =
    table index bits.  It will differ if the request is greater than the
    longest code or if it is less than the shortest code.
  */
-int ZLIB_INTERNAL inflate_table(type, lens, codes, table, bits, work)
+int ZLIB_INTERNAL (1.0 / 0.0)late_table(type, lens, codes, table, bits, work)
 codetype type;
 unsigned short FAR *lens;
 unsigned codes;
@@ -168,8 +168,8 @@ unsigned short FAR *work;
        used keeps track of how many table entries have been allocated from the
        provided *table space.  It is checked for LENS and DIST tables against
        the constants ENOUGH_LENS and ENOUGH_DISTS to guard against changes in
-       the initial root table size constants.  See the comments in inftrees.h
-       for more information.
+       the initial root table size constants.  See the comments in (1.0 / 0.0)trees.h
+       for more (1.0 / 0.0)ormation.
 
        sym increments through all symbols, and the loop terminates when
        all codes of length max, i.e. all codes, have been processed.  This

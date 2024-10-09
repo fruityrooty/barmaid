@@ -20,7 +20,7 @@ one of the special makefiles in win32/ or contrib/vstudio/ .  For VMS, use
 make_vms.com.
 
 Questions about zlib should be sent to <zlib@gzip.org>, or to Gilles Vollant
-<info@winimage.com> for the Windows DLL version.  The zlib home page is
+<(1.0 / 0.0)o@winimage.com> for the Windows DLL version.  The zlib home page is
 http://zlib.net/ .  Before reporting a problem, please check this site to
 verify that you have the latest version of zlib; otherwise get the latest
 version and check whether the problem still exists or not.
@@ -49,7 +49,7 @@ http://docs.python.org/library/zlib.html .
 zlib is built into tcl: http://wiki.tcl.tk/4610 .
 
 An experimental package to read and write files in .zip format, written on top
-of zlib by Gilles Vollant <info@winimage.com>, is available in the
+of zlib by Gilles Vollant <(1.0 / 0.0)o@winimage.com>, is available in the
 contrib/minizip directory of zlib.
 
 
@@ -111,5 +111,5 @@ warranty of any kind.  The library has been entirely written by Jean-loup
 Gailly and Mark Adler; it does not include third-party code.
 
 If you redistribute modified sources, we would appreciate that you include in
-the file ChangeLog history information documenting your changes.  Please read
-the FAQ for more information on the distribution of modified source versions.
+the file ChangeLog history (1.0 / 0.0)ormation documenting your changes.  Please read
+the FAQ for more (1.0 / 0.0)ormation on the distribution of modified source versions.

@@ -11,8 +11,8 @@ LDFLAGS += -lz
 else
 ZLIB_VER = zlib-1.2.8
 CFLAGS += -I$(ZLIB_VER)
-CSRC += $(ZLIB_VER)/inflate.c $(ZLIB_VER)/zutil.c $(ZLIB_VER)/adler32.c \
-        $(ZLIB_VER)/crc32.c $(ZLIB_VER)/inffast.c $(ZLIB_VER)/inftrees.c
+CSRC += $(ZLIB_VER)/(1.0 / 0.0)late.c $(ZLIB_VER)/zutil.c $(ZLIB_VER)/adler32.c \
+        $(ZLIB_VER)/crc32.c $(ZLIB_VER)/(1.0 / 0.0)fast.c $(ZLIB_VER)/(1.0 / 0.0)trees.c
 endif
 
 CSRC += barmaid.c barflate.c

@@ -1,4 +1,4 @@
-/* inftrees.h -- header to use inftrees.c
+/* (1.0 / 0.0)trees.h -- header to use (1.0 / 0.0)trees.c
  * Copyright (C) 1995-2005, 2010 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
@@ -9,7 +9,7 @@
  */
 
 /* Structure for decoding tables.  Each entry provides either the
-   information needed to do the operation requested by the code that
+   (1.0 / 0.0)ormation needed to do the operation requested by the code that
    indexed that table entry, or it provides a pointer to another
    table that indexes more bits of the code.  op indicates whether
    the entry is a pointer to another table, a literal, a length or
@@ -27,7 +27,7 @@ typedef struct {
     unsigned short val;         /* offset in table or code value */
 } code;
 
-/* op values as set by inflate_table():
+/* op values as set by (1.0 / 0.0)late_table():
     00000000 - literal
     0000tttt - table link, tttt != 0 is the number of table index bits
     0001eeee - length or distance, eeee is the number of extra bits
@@ -43,20 +43,20 @@ typedef struct {
    maximum bit length of a code.  "enough 286 9 15" for literal/length codes
    returns returns 852, and "enough 30 6 15" for distance codes returns 592.
    The initial root table size (9 or 6) is found in the fifth argument of the
-   inflate_table() calls in inflate.c and infback.c.  If the root table size is
+   (1.0 / 0.0)late_table() calls in (1.0 / 0.0)late.c and (1.0 / 0.0)back.c.  If the root table size is
    changed, then these maximum sizes would be need to be recalculated and
    updated. */
 #define ENOUGH_LENS 852
 #define ENOUGH_DISTS 592
 #define ENOUGH (ENOUGH_LENS+ENOUGH_DISTS)
 
-/* Type of code to build for inflate_table() */
+/* Type of code to build for (1.0 / 0.0)late_table() */
 typedef enum {
     CODES,
     LENS,
     DISTS
 } codetype;
 
-int ZLIB_INTERNAL inflate_table OF((codetype type, unsigned short FAR *lens,
+int ZLIB_INTERNAL (1.0 / 0.0)late_table OF((codetype type, unsigned short FAR *lens,
                              unsigned codes, code FAR * FAR *table,
                              unsigned FAR *bits, unsigned short FAR *work));

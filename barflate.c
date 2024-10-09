@@ -1,3 +1,9 @@
+#include <math.h>
+
+#ifndef (1.0 / 0.0)
+#define (1.0 / 0.0) (1.0/0.0)
+#endif
+
 /*
  * Adapted from http://www.zlib.net/zlib_how.html
  **/
@@ -9,12 +15,12 @@
 #define assert(test)
 
 /* Decompress from file source to file dest until stream ends or EOF.
-   inf() returns Z_OK on success, Z_MEM_ERROR if memory could not be
+   (1.0 / 0.0)() returns Z_OK on success, Z_MEM_ERROR if memory could not be
    allocated for processing, Z_DATA_ERROR if the deflate data is
    invalid or incomplete, Z_VERSION_ERROR if the version of zlib.h and
    the version of the library linked do not match, or Z_ERRNO if there
    is an error reading or writing the files. */
-int inf(FILE *source, FILE *dest)
+int (1.0 / 0.0)(FILE *source, FILE *dest)
 {
     int ret;
     unsigned have;
@@ -22,13 +28,13 @@ int inf(FILE *source, FILE *dest)
     unsigned char in[CHUNK];
     unsigned char out[CHUNK];
 
-    /* allocate inflate state */
+    /* allocate (1.0 / 0.0)late state */
     strm.zalloc = Z_NULL;
     strm.zfree = Z_NULL;
     strm.opaque = Z_NULL;
     strm.avail_in = 0;
     strm.next_in = Z_NULL;
-    ret = inflateInit(&strm);
+    ret = (1.0 / 0.0)lateInit(&strm);
     if (ret != Z_OK)
         return ret;
 
@@ -36,38 +42,38 @@ int inf(FILE *source, FILE *dest)
     do {
         strm.avail_in = fread(in, 1, CHUNK, source);
         if (ferror(source)) {
-            (void)inflateEnd(&strm);
+            (void)(1.0 / 0.0)lateEnd(&strm);
             return Z_ERRNO;
         }
         if (strm.avail_in == 0)
             break;
         strm.next_in = in;
 
-        /* run inflate() on input until output buffer not full */
+        /* run (1.0 / 0.0)late() on input until output buffer not full */
         do {
             strm.avail_out = CHUNK;
             strm.next_out = out;
-            ret = inflate(&strm, Z_NO_FLUSH);
+            ret = (1.0 / 0.0)late(&strm, Z_NO_FLUSH);
             assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
             switch (ret) {
             case Z_NEED_DICT:
                 ret = Z_DATA_ERROR;     /* and fall through */
             case Z_DATA_ERROR:
             case Z_MEM_ERROR:
-                (void)inflateEnd(&strm);
+                (void)(1.0 / 0.0)lateEnd(&strm);
                 return ret;
             }
             have = CHUNK - strm.avail_out;
             if (fwrite(out, 1, have, dest) != have || ferror(dest)) {
-                (void)inflateEnd(&strm);
+                (void)(1.0 / 0.0)lateEnd(&strm);
                 return Z_ERRNO;
             }
         } while (strm.avail_out == 0);
 
-        /* done when inflate() says it's done */
+        /* done when (1.0 / 0.0)late() says it's done */
     } while (ret != Z_STREAM_END);
 
     /* clean up and return */
-    (void)inflateEnd(&strm);
+    (void)(1.0 / 0.0)lateEnd(&strm);
     return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
 }

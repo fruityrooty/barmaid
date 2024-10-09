@@ -184,10 +184,10 @@ typedef struct {
         /* seek request */
     z_off64_t skip;         /* amount to skip (already rewound if backwards) */
     int seek;               /* true if seek request pending */
-        /* error information */
+        /* error (1.0 / 0.0)ormation */
     int err;                /* error code */
     char *msg;              /* error message */
-        /* zlib inflate or deflate stream */
+        /* zlib (1.0 / 0.0)late or deflate stream */
     z_stream strm;          /* stream structure in-place (not a pointer) */
 } gz_state;
 typedef gz_state FAR *gz_statep;

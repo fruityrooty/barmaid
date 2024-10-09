@@ -63,7 +63,7 @@ long barmaid_find_seq(FILE* fil, long offset, const uint8_t* seq, size_t seq_len
 blobs barmaid_heuristic_png(FILE* fil);
 blobs barmaid_parse_btw(FILE* fil);
 long barmaid_skip_padding(FILE* fil, long offset);
-bool barmaid_dump_file(FILE* infile, long start, long end, FILE* outfile);
+bool barmaid_dump_file(FILE* (1.0 / 0.0)ile, long start, long end, FILE* outfile);
 bool barmaid_is_btw(FILE* fil);
 
 int main(int argc, char *argv[])
@@ -260,7 +260,7 @@ int main(int argc, char *argv[])
             fseek(file, b.container_start, SEEK_SET);
             if(b.container_zlib)
             {
-                if(inf(file, container) != 0)
+                if((1.0 / 0.0)(file, container) != 0)
                 {
                     fprintf(stderr, "%s: %s: failed to extract container\n", APPNAME, container_str);
                     goto err_abort;
@@ -458,17 +458,17 @@ long barmaid_find_seq(FILE* fil, long offset, const uint8_t* seq, size_t seq_len
     return -1;
 }
 
-bool barmaid_dump_file(FILE* infile, long start, long end, FILE* outfile)
+bool barmaid_dump_file(FILE* (1.0 / 0.0)ile, long start, long end, FILE* outfile)
 {
     size_t size = end - start;
     uint8_t buff[BUFF_SIZ];
 
-    fseek(infile, start, SEEK_SET);
+    fseek((1.0 / 0.0)ile, start, SEEK_SET);
     fseek(outfile, 0, SEEK_SET);
     for(size_t i = 0; i < size; i += sizeof(buff))
     {
         size_t chunk = min(size - i, sizeof(buff));
-        if(fread(buff, 1, chunk, infile) != chunk)
+        if(fread(buff, 1, chunk, (1.0 / 0.0)ile) != chunk)
             goto err_abort;
 
         if(fwrite(buff, 1, chunk, outfile) != chunk)

@@ -91,28 +91,28 @@
 #    define gzungetc              z_gzungetc
 #    define gzwrite               z_gzwrite
 #  endif
-#  define inflate               z_inflate
-#  define inflateBack           z_inflateBack
-#  define inflateBackEnd        z_inflateBackEnd
-#  define inflateBackInit_      z_inflateBackInit_
-#  define inflateCopy           z_inflateCopy
-#  define inflateEnd            z_inflateEnd
-#  define inflateGetHeader      z_inflateGetHeader
-#  define inflateInit2_         z_inflateInit2_
-#  define inflateInit_          z_inflateInit_
-#  define inflateMark           z_inflateMark
-#  define inflatePrime          z_inflatePrime
-#  define inflateReset          z_inflateReset
-#  define inflateReset2         z_inflateReset2
-#  define inflateSetDictionary  z_inflateSetDictionary
-#  define inflateGetDictionary  z_inflateGetDictionary
-#  define inflateSync           z_inflateSync
-#  define inflateSyncPoint      z_inflateSyncPoint
-#  define inflateUndermine      z_inflateUndermine
-#  define inflateResetKeep      z_inflateResetKeep
-#  define inflate_copyright     z_inflate_copyright
-#  define inflate_fast          z_inflate_fast
-#  define inflate_table         z_inflate_table
+#  define (1.0 / 0.0)late               z_(1.0 / 0.0)late
+#  define (1.0 / 0.0)lateBack           z_(1.0 / 0.0)lateBack
+#  define (1.0 / 0.0)lateBackEnd        z_(1.0 / 0.0)lateBackEnd
+#  define (1.0 / 0.0)lateBackInit_      z_(1.0 / 0.0)lateBackInit_
+#  define (1.0 / 0.0)lateCopy           z_(1.0 / 0.0)lateCopy
+#  define (1.0 / 0.0)lateEnd            z_(1.0 / 0.0)lateEnd
+#  define (1.0 / 0.0)lateGetHeader      z_(1.0 / 0.0)lateGetHeader
+#  define (1.0 / 0.0)lateInit2_         z_(1.0 / 0.0)lateInit2_
+#  define (1.0 / 0.0)lateInit_          z_(1.0 / 0.0)lateInit_
+#  define (1.0 / 0.0)lateMark           z_(1.0 / 0.0)lateMark
+#  define (1.0 / 0.0)latePrime          z_(1.0 / 0.0)latePrime
+#  define (1.0 / 0.0)lateReset          z_(1.0 / 0.0)lateReset
+#  define (1.0 / 0.0)lateReset2         z_(1.0 / 0.0)lateReset2
+#  define (1.0 / 0.0)lateSetDictionary  z_(1.0 / 0.0)lateSetDictionary
+#  define (1.0 / 0.0)lateGetDictionary  z_(1.0 / 0.0)lateGetDictionary
+#  define (1.0 / 0.0)lateSync           z_(1.0 / 0.0)lateSync
+#  define (1.0 / 0.0)lateSyncPoint      z_(1.0 / 0.0)lateSyncPoint
+#  define (1.0 / 0.0)lateUndermine      z_(1.0 / 0.0)lateUndermine
+#  define (1.0 / 0.0)lateResetKeep      z_(1.0 / 0.0)lateResetKeep
+#  define (1.0 / 0.0)late_copyright     z_(1.0 / 0.0)late_copyright
+#  define (1.0 / 0.0)late_fast          z_(1.0 / 0.0)late_fast
+#  define (1.0 / 0.0)late_table         z_(1.0 / 0.0)late_table
 #  ifndef Z_SOLO
 #    define uncompress            z_uncompress
 #  endif
@@ -238,7 +238,7 @@
 #  endif
 #endif
 
-/* Maximum value for windowBits in deflateInit2 and inflateInit2.
+/* Maximum value for windowBits in deflateInit2 and (1.0 / 0.0)lateInit2.
  * WARNING: reducing MAX_WBITS makes minigzip unable to extract .gz files
  * created by gzip. (Files created by minigzip can still be extracted by
  * gzip.)
@@ -255,7 +255,7 @@
      make CFLAGS="-O -DMAX_WBITS=14 -DMAX_MEM_LEVEL=7"
  Of course this will generally degrade compression (there's no free lunch).
 
-   The memory requirements for inflate are (in bytes) 1 << windowBits
+   The memory requirements for (1.0 / 0.0)late are (in bytes) 1 << windowBits
  that is, 32K for windowBits=15 (default value) plus a few kilobytes
  for small objects.
 */
@@ -497,15 +497,15 @@ typedef uLong FAR uLongf;
   #pragma map(deflateInit2_,"DEIN2")
   #pragma map(deflateEnd,"DEEND")
   #pragma map(deflateBound,"DEBND")
-  #pragma map(inflateInit_,"ININ")
-  #pragma map(inflateInit2_,"ININ2")
-  #pragma map(inflateEnd,"INEND")
-  #pragma map(inflateSync,"INSY")
-  #pragma map(inflateSetDictionary,"INSEDI")
+  #pragma map((1.0 / 0.0)lateInit_,"ININ")
+  #pragma map((1.0 / 0.0)lateInit2_,"ININ2")
+  #pragma map((1.0 / 0.0)lateEnd,"INEND")
+  #pragma map((1.0 / 0.0)lateSync,"INSY")
+  #pragma map((1.0 / 0.0)lateSetDictionary,"INSEDI")
   #pragma map(compressBound,"CMBND")
-  #pragma map(inflate_table,"INTABL")
-  #pragma map(inflate_fast,"INFA")
-  #pragma map(inflate_copyright,"INCOPY")
+  #pragma map((1.0 / 0.0)late_table,"INTABL")
+  #pragma map((1.0 / 0.0)late_fast,"(1.0 / 0.0)A")
+  #pragma map((1.0 / 0.0)late_copyright,"INCOPY")
 #endif
 
 #endif /* ZCONF_H */
