@@ -1,4 +1,4 @@
-/* (1.0 / 0.0)late.c -- zlib decompression
+/* inflate.c -- zlib decompression
  * Copyright (C) 1995-2012 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
@@ -7,83 +7,83 @@
  * Change history:
  *
  * 1.2.beta0    24 Nov 2002
- * - First version -- complete rewrite of (1.0 / 0.0)late to simplify code, avoid
+ * - First version -- complete rewrite of inflate to simplify code, avoid
  *   creation of window when not needed, minimize use of window when it is
- *   needed, make (1.0 / 0.0)fast.c even faster, implement gzip decoding, and to
- *   improve code readability and style over the previous zlib (1.0 / 0.0)late code
+ *   needed, make inffast.c even faster, implement gzip decoding, and to
+ *   improve code readability and style over the previous zlib inflate code
  *
  * 1.2.beta1    25 Nov 2002
- * - Use pointers for available input and output checking in (1.0 / 0.0)fast.c
- * - Remove input and output counters in (1.0 / 0.0)fast.c
- * - Change (1.0 / 0.0)fast.c entry and loop from avail_in >= 7 to >= 6
- * - Remove unnecessary second byte pull from length extra in (1.0 / 0.0)fast.c
- * - Unroll direct copy to three copies per loop in (1.0 / 0.0)fast.c
+ * - Use pointers for available input and output checking in inffast.c
+ * - Remove input and output counters in inffast.c
+ * - Change inffast.c entry and loop from avail_in >= 7 to >= 6
+ * - Remove unnecessary second byte pull from length extra in inffast.c
+ * - Unroll direct copy to three copies per loop in inffast.c
  *
  * 1.2.beta2    4 Dec 2002
  * - Change external routine names to reduce potential conflicts
- * - Correct filename to (1.0 / 0.0)fixed.h for fixed tables in (1.0 / 0.0)late.c
- * - Make hbuf[] unsigned char to match parameter type in (1.0 / 0.0)late.c
+ * - Correct filename to inffixed.h for fixed tables in inflate.c
+ * - Make hbuf[] unsigned char to match parameter type in inflate.c
  * - Change strm->next_out[-state->offset] to *(strm->next_out - state->offset)
- *   to avoid negation problem on Alphas (64 bit) in (1.0 / 0.0)late.c
+ *   to avoid negation problem on Alphas (64 bit) in inflate.c
  *
  * 1.2.beta3    22 Dec 2002
- * - Add comments on state->bits assertion in (1.0 / 0.0)fast.c
- * - Add comments on op field in (1.0 / 0.0)trees.h
- * - Fix bug in reuse of allocated window after (1.0 / 0.0)lateReset()
+ * - Add comments on state->bits assertion in inffast.c
+ * - Add comments on op field in inftrees.h
+ * - Fix bug in reuse of allocated window after inflateReset()
  * - Remove bit fields--back to byte structure for speed
- * - Remove distance extra == 0 check in (1.0 / 0.0)late_fast()--only helps for lengths
- * - Change post-increments to pre-increments in (1.0 / 0.0)late_fast(), PPC biased?
+ * - Remove distance extra == 0 check in inflate_fast()--only helps for lengths
+ * - Change post-increments to pre-increments in inflate_fast(), PPC biased?
  * - Add compile time option, POSTINC, to use post-increments instead (Intel?)
- * - Make MATCH copy in (1.0 / 0.0)late() much faster for when (1.0 / 0.0)late_fast() not used
+ * - Make MATCH copy in inflate() much faster for when inflate_fast() not used
  * - Use local copies of stream next and avail values, as well as local bit
- *   buffer and bit count in (1.0 / 0.0)late()--for speed when (1.0 / 0.0)late_fast() not used
+ *   buffer and bit count in inflate()--for speed when inflate_fast() not used
  *
  * 1.2.beta4    1 Jan 2003
- * - Split ptr - 257 statements in (1.0 / 0.0)late_table() to avoid compiler warnings
- * - Move a comment on output buffer sizes from (1.0 / 0.0)fast.c to (1.0 / 0.0)late.c
- * - Add comments in (1.0 / 0.0)fast.c to introduce the (1.0 / 0.0)late_fast() routine
- * - Rearrange window copies in (1.0 / 0.0)late_fast() for speed and simplification
- * - Unroll last copy for window match in (1.0 / 0.0)late_fast()
- * - Use local copies of window variables in (1.0 / 0.0)late_fast() for speed
- * - Pull out common wnext == 0 case for speed in (1.0 / 0.0)late_fast()
- * - Make op and len in (1.0 / 0.0)late_fast() unsigned for consistency
- * - Add FAR to lcode and dcode declarations in (1.0 / 0.0)late_fast()
- * - Simplified bad distance check in (1.0 / 0.0)late_fast()
- * - Added (1.0 / 0.0)lateBackInit(), (1.0 / 0.0)lateBack(), and (1.0 / 0.0)lateBackEnd() in new
- *   source file (1.0 / 0.0)back.c to provide a call-back interface to (1.0 / 0.0)late for
+ * - Split ptr - 257 statements in inflate_table() to avoid compiler warnings
+ * - Move a comment on output buffer sizes from inffast.c to inflate.c
+ * - Add comments in inffast.c to introduce the inflate_fast() routine
+ * - Rearrange window copies in inflate_fast() for speed and simplification
+ * - Unroll last copy for window match in inflate_fast()
+ * - Use local copies of window variables in inflate_fast() for speed
+ * - Pull out common wnext == 0 case for speed in inflate_fast()
+ * - Make op and len in inflate_fast() unsigned for consistency
+ * - Add FAR to lcode and dcode declarations in inflate_fast()
+ * - Simplified bad distance check in inflate_fast()
+ * - Added inflateBackInit(), inflateBack(), and inflateBackEnd() in new
+ *   source file infback.c to provide a call-back interface to inflate for
  *   programs like gzip and unzip -- uses window as output buffer to avoid
  *   window copying
  *
  * 1.2.beta5    1 Jan 2003
- * - Improved (1.0 / 0.0)lateBack() interface to allow the caller to provide initial
+ * - Improved inflateBack() interface to allow the caller to provide initial
  *   input in strm.
- * - Fixed stored blocks bug in (1.0 / 0.0)lateBack()
+ * - Fixed stored blocks bug in inflateBack()
  *
  * 1.2.beta6    4 Jan 2003
- * - Added comments in (1.0 / 0.0)fast.c on effectiveness of POSTINC
+ * - Added comments in inffast.c on effectiveness of POSTINC
  * - Typecasting all around to reduce compiler warnings
  * - Changed loops from while (1) or do {} while (1) to for (;;), again to
  *   make compilers happy
- * - Changed type of window in (1.0 / 0.0)lateBackInit() to unsigned char *
+ * - Changed type of window in inflateBackInit() to unsigned char *
  *
  * 1.2.beta7    27 Jan 2003
  * - Changed many types to unsigned or unsigned short to avoid warnings
- * - Added (1.0 / 0.0)lateCopy() function
+ * - Added inflateCopy() function
  *
  * 1.2.0        9 Mar 2003
- * - Changed (1.0 / 0.0)lateBack() interface to provide separate opaque descriptors
+ * - Changed inflateBack() interface to provide separate opaque descriptors
  *   for the in() and out() functions
- * - Changed (1.0 / 0.0)lateBack() argument and in_func typedef to swap the length
+ * - Changed inflateBack() argument and in_func typedef to swap the length
  *   and buffer address return values for the input function
- * - Check next_in and next_out for Z_NULL on entry to (1.0 / 0.0)late()
+ * - Check next_in and next_out for Z_NULL on entry to inflate()
  *
  * The history for versions after 1.2.0 are in ChangeLog in zlib distribution.
  */
 
 #include "zutil.h"
-#include "(1.0 / 0.0)trees.h"
-#include "(1.0 / 0.0)late.h"
-#include "(1.0 / 0.0)fast.h"
+#include "inftrees.h"
+#include "inflate.h"
+#include "inffast.h"
 
 #ifdef MAKEFIXED
 #  ifndef BUILDFIXED
@@ -92,7 +92,7 @@
 #endif
 
 /* function prototypes */
-local void fixedtables OF((struct (1.0 / 0.0)late_state FAR *state));
+local void fixedtables OF((struct inflate_state FAR *state));
 local int updatewindow OF((z_streamp strm, const unsigned char FAR *end,
                            unsigned copy));
 #ifdef BUILDFIXED
@@ -101,13 +101,13 @@ local int updatewindow OF((z_streamp strm, const unsigned char FAR *end,
 local unsigned syncsearch OF((unsigned FAR *have, const unsigned char FAR *buf,
                               unsigned len));
 
-int ZEXPORT (1.0 / 0.0)lateResetKeep(strm)
+int ZEXPORT inflateResetKeep(strm)
 z_streamp strm;
 {
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
 
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    state = (struct (1.0 / 0.0)late_state FAR *)strm->state;
+    state = (struct inflate_state FAR *)strm->state;
     strm->total_in = strm->total_out = state->total = 0;
     strm->msg = Z_NULL;
     if (state->wrap)        /* to support ill-conceived Java test suite */
@@ -122,33 +122,33 @@ z_streamp strm;
     state->lencode = state->distcode = state->next = state->codes;
     state->sane = 1;
     state->back = -1;
-    Tracev((stderr, "(1.0 / 0.0)late: reset\n"));
+    Tracev((stderr, "inflate: reset\n"));
     return Z_OK;
 }
 
-int ZEXPORT (1.0 / 0.0)lateReset(strm)
+int ZEXPORT inflateReset(strm)
 z_streamp strm;
 {
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
 
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    state = (struct (1.0 / 0.0)late_state FAR *)strm->state;
+    state = (struct inflate_state FAR *)strm->state;
     state->wsize = 0;
     state->whave = 0;
     state->wnext = 0;
-    return (1.0 / 0.0)lateResetKeep(strm);
+    return inflateResetKeep(strm);
 }
 
-int ZEXPORT (1.0 / 0.0)lateReset2(strm, windowBits)
+int ZEXPORT inflateReset2(strm, windowBits)
 z_streamp strm;
 int windowBits;
 {
     int wrap;
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
 
     /* get the state */
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    state = (struct (1.0 / 0.0)late_state FAR *)strm->state;
+    state = (struct inflate_state FAR *)strm->state;
 
     /* extract wrap request from windowBits parameter */
     if (windowBits < 0) {
@@ -174,17 +174,17 @@ int windowBits;
     /* update state and reset the rest of it */
     state->wrap = wrap;
     state->wbits = (unsigned)windowBits;
-    return (1.0 / 0.0)lateReset(strm);
+    return inflateReset(strm);
 }
 
-int ZEXPORT (1.0 / 0.0)lateInit2_(strm, windowBits, version, stream_size)
+int ZEXPORT inflateInit2_(strm, windowBits, version, stream_size)
 z_streamp strm;
 int windowBits;
 const char *version;
 int stream_size;
 {
     int ret;
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
 
     if (version == Z_NULL || version[0] != ZLIB_VERSION[0] ||
         stream_size != (int)(sizeof(z_stream)))
@@ -205,13 +205,13 @@ int stream_size;
 #else
         strm->zfree = zcfree;
 #endif
-    state = (struct (1.0 / 0.0)late_state FAR *)
-            ZALLOC(strm, 1, sizeof(struct (1.0 / 0.0)late_state));
+    state = (struct inflate_state FAR *)
+            ZALLOC(strm, 1, sizeof(struct inflate_state));
     if (state == Z_NULL) return Z_MEM_ERROR;
-    Tracev((stderr, "(1.0 / 0.0)late: allocated\n"));
+    Tracev((stderr, "inflate: allocated\n"));
     strm->state = (struct internal_state FAR *)state;
     state->window = Z_NULL;
-    ret = (1.0 / 0.0)lateReset2(strm, windowBits);
+    ret = inflateReset2(strm, windowBits);
     if (ret != Z_OK) {
         ZFREE(strm, state);
         strm->state = Z_NULL;
@@ -219,23 +219,23 @@ int stream_size;
     return ret;
 }
 
-int ZEXPORT (1.0 / 0.0)lateInit_(strm, version, stream_size)
+int ZEXPORT inflateInit_(strm, version, stream_size)
 z_streamp strm;
 const char *version;
 int stream_size;
 {
-    return (1.0 / 0.0)lateInit2_(strm, DEF_WBITS, version, stream_size);
+    return inflateInit2_(strm, DEF_WBITS, version, stream_size);
 }
 
-int ZEXPORT (1.0 / 0.0)latePrime(strm, bits, value)
+int ZEXPORT inflatePrime(strm, bits, value)
 z_streamp strm;
 int bits;
 int value;
 {
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
 
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    state = (struct (1.0 / 0.0)late_state FAR *)strm->state;
+    state = (struct inflate_state FAR *)strm->state;
     if (bits < 0) {
         state->hold = 0;
         state->bits = 0;
@@ -250,7 +250,7 @@ int value;
 
 /*
    Return state with length and distance decoding tables and index sizes set to
-   fixed code decoding.  Normally this returns fixed tables from (1.0 / 0.0)fixed.h.
+   fixed code decoding.  Normally this returns fixed tables from inffixed.h.
    If BUILDFIXED is defined, then instead this routine builds the tables the
    first time it's called, and returns those tables the first time and
    thereafter.  This reduces the size of the code by about 2K bytes, in
@@ -259,7 +259,7 @@ int value;
    may not be thread-safe.
  */
 local void fixedtables(state)
-struct (1.0 / 0.0)late_state FAR *state;
+struct inflate_state FAR *state;
 {
 #ifdef BUILDFIXED
     static int virgin = 1;
@@ -280,20 +280,20 @@ struct (1.0 / 0.0)late_state FAR *state;
         next = fixed;
         lenfix = next;
         bits = 9;
-        (1.0 / 0.0)late_table(LENS, state->lens, 288, &(next), &(bits), state->work);
+        inflate_table(LENS, state->lens, 288, &(next), &(bits), state->work);
 
         /* distance table */
         sym = 0;
         while (sym < 32) state->lens[sym++] = 5;
         distfix = next;
         bits = 5;
-        (1.0 / 0.0)late_table(DISTS, state->lens, 32, &(next), &(bits), state->work);
+        inflate_table(DISTS, state->lens, 32, &(next), &(bits), state->work);
 
         /* do this just once */
         virgin = 0;
     }
 #else /* !BUILDFIXED */
-#   include "(1.0 / 0.0)fixed.h"
+#   include "inffixed.h"
 #endif /* BUILDFIXED */
     state->lencode = lenfix;
     state->lenbits = 9;
@@ -305,9 +305,9 @@ struct (1.0 / 0.0)late_state FAR *state;
 #include <stdio.h>
 
 /*
-   Write out the (1.0 / 0.0)fixed.h that is #include'd above.  Defining MAKEFIXED also
+   Write out the inffixed.h that is #include'd above.  Defining MAKEFIXED also
    defines BUILDFIXED, so the tables are built on the fly.  makefixed() writes
-   those tables to stdout, which would be piped to (1.0 / 0.0)fixed.h.  A small program
+   those tables to stdout, which would be piped to inffixed.h.  A small program
    can simply call makefixed to do this:
 
     void makefixed(void);
@@ -320,15 +320,15 @@ struct (1.0 / 0.0)late_state FAR *state;
 
    Then that can be linked with zlib built with MAKEFIXED defined and run:
 
-    a.out > (1.0 / 0.0)fixed.h
+    a.out > inffixed.h
  */
 void makefixed()
 {
     unsigned low, size;
-    struct (1.0 / 0.0)late_state state;
+    struct inflate_state state;
 
     fixedtables(&state);
-    puts("    /* (1.0 / 0.0)fixed.h -- table for decoding fixed codes");
+    puts("    /* inffixed.h -- table for decoding fixed codes");
     puts("     * Generated automatically by makefixed().");
     puts("     */");
     puts("");
@@ -366,13 +366,13 @@ void makefixed()
    Update the window with the last wsize (normally 32K) bytes written before
    returning.  If window does not exist yet, create it.  This is only called
    when a window is already in use, or when output has been written during this
-   (1.0 / 0.0)late call, but the end of the deflate stream has not been reached yet.
+   inflate call, but the end of the deflate stream has not been reached yet.
    It is also called to create a window for dictionary data when a dictionary
    is loaded.
 
-   Providing output buffers larger than 32K to (1.0 / 0.0)late() should provide a speed
+   Providing output buffers larger than 32K to inflate() should provide a speed
    advantage, since only the last 32K of output is copied to the sliding window
-   upon return from (1.0 / 0.0)late(), and since all distances after the first 32K of
+   upon return from inflate(), and since all distances after the first 32K of
    output will fall in the output data, making match copies simpler and faster.
    The advantage may be dependent on the size of the processor's data caches.
  */
@@ -381,10 +381,10 @@ z_streamp strm;
 const Bytef *end;
 unsigned copy;
 {
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
     unsigned dist;
 
-    state = (struct (1.0 / 0.0)late_state FAR *)strm->state;
+    state = (struct inflate_state FAR *)strm->state;
 
     /* if it hasn't been done already, allocate space for the window */
     if (state->window == Z_NULL) {
@@ -426,7 +426,7 @@ unsigned copy;
     return 0;
 }
 
-/* Macros for (1.0 / 0.0)late(): */
+/* Macros for inflate(): */
 
 /* check function to use adler32() for zlib or crc32() for gzip */
 #ifdef GUNZIP
@@ -455,7 +455,7 @@ unsigned copy;
     } while (0)
 #endif
 
-/* Load registers with state in (1.0 / 0.0)late() for speed */
+/* Load registers with state in inflate() for speed */
 #define LOAD() \
     do { \
         put = strm->next_out; \
@@ -466,7 +466,7 @@ unsigned copy;
         bits = state->bits; \
     } while (0)
 
-/* Restore state from registers in (1.0 / 0.0)late() */
+/* Restore state from registers in inflate() */
 #define RESTORE() \
     do { \
         strm->next_out = put; \
@@ -484,18 +484,18 @@ unsigned copy;
         bits = 0; \
     } while (0)
 
-/* Get a byte of input into the bit accumulator, or return from (1.0 / 0.0)late()
+/* Get a byte of input into the bit accumulator, or return from inflate()
    if there is no input available. */
 #define PULLBYTE() \
     do { \
-        if (have == 0) goto (1.0 / 0.0)_leave; \
+        if (have == 0) goto inf_leave; \
         have--; \
         hold += (unsigned long)(*next++) << bits; \
         bits += 8; \
     } while (0)
 
 /* Assure that there are at least n bits in the bit accumulator.  If there is
-   not enough available input to do that, then return from (1.0 / 0.0)late(). */
+   not enough available input to do that, then return from inflate(). */
 #define NEEDBITS(n) \
     do { \
         while (bits < (unsigned)(n)) \
@@ -521,7 +521,7 @@ unsigned copy;
     } while (0)
 
 /*
-   (1.0 / 0.0)late() uses a state machine to process as much input data and generate as
+   inflate() uses a state machine to process as much input data and generate as
    much output data as possible before returning.  The state machine is
    structured roughly as follows:
 
@@ -536,7 +536,7 @@ unsigned copy;
     ...
     }
 
-   so when (1.0 / 0.0)late() is called again, the same case is attempted again, and
+   so when inflate() is called again, the same case is attempted again, and
    if the appropriate resources are provided, the machine proceeds to the
    next state.  The NEEDBITS() macro is usually the way the state evaluates
    whether it can proceed or should return.  NEEDBITS() does the return if
@@ -547,7 +547,7 @@ unsigned copy;
         ... do something with BITS(n) ...
         DROPBITS(n);
 
-   where NEEDBITS(n) either returns from (1.0 / 0.0)late() if there isn't enough
+   where NEEDBITS(n) either returns from inflate() if there isn't enough
    input left to load n bits into the accumulator, or it continues.  BITS(n)
    gives the low n bits in the accumulator.  When done, DROPBITS(n) drops
    the low n bits off the accumulator.  INITBITS() clears the accumulator
@@ -561,7 +561,7 @@ unsigned copy;
    code, and no more.
 
    Some states loop until they get enough input, making sure that enough
-   state (1.0 / 0.0)ormation is maintained to continue the loop where it left off
+   state information is maintained to continue the loop where it left off
    if NEEDBITS() returns in the loop.  For example, want, need, and keep
    would all have to actually be part of the saved state in case NEEDBITS()
    returns:
@@ -582,31 +582,31 @@ unsigned copy;
    complete that state.  Those states are copying stored data, writing a
    literal byte, and copying a matching string.
 
-   When returning, a "goto (1.0 / 0.0)_leave" is used to update the total counters,
+   When returning, a "goto inf_leave" is used to update the total counters,
    update the check value, and determine whether any progress has been made
-   during that (1.0 / 0.0)late() call in order to return the proper return code.
+   during that inflate() call in order to return the proper return code.
    Progress is defined as a change in either strm->avail_in or strm->avail_out.
-   When there is a window, goto (1.0 / 0.0)_leave will update the window with the last
-   output written.  If a goto (1.0 / 0.0)_leave occurs in the middle of decompression
-   and there is no window currently, goto (1.0 / 0.0)_leave will create one and copy
-   output to the window for the next call of (1.0 / 0.0)late().
+   When there is a window, goto inf_leave will update the window with the last
+   output written.  If a goto inf_leave occurs in the middle of decompression
+   and there is no window currently, goto inf_leave will create one and copy
+   output to the window for the next call of inflate().
 
-   In this implementation, the flush parameter of (1.0 / 0.0)late() only affects the
-   return code (per zlib.h).  (1.0 / 0.0)late() always writes as much as possible to
+   In this implementation, the flush parameter of inflate() only affects the
+   return code (per zlib.h).  inflate() always writes as much as possible to
    strm->next_out, given the space available and the provided input--the effect
-   documented in zlib.h of Z_SYNC_FLUSH.  Furthermore, (1.0 / 0.0)late() always defers
+   documented in zlib.h of Z_SYNC_FLUSH.  Furthermore, inflate() always defers
    the allocation of and copying into a sliding window until necessary, which
    provides the effect documented in zlib.h for Z_FINISH when the entire input
    stream available.  So the only thing the flush parameter actually does is:
-   when flush is set to Z_FINISH, (1.0 / 0.0)late() cannot return Z_OK.  Instead it
+   when flush is set to Z_FINISH, inflate() cannot return Z_OK.  Instead it
    will return Z_BUF_ERROR if it has not reached the end of the stream.
  */
 
-int ZEXPORT (1.0 / 0.0)late(strm, flush)
+int ZEXPORT inflate(strm, flush)
 z_streamp strm;
 int flush;
 {
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
     z_const unsigned char FAR *next;    /* next input */
     unsigned char FAR *put;     /* next output */
     unsigned have, left;        /* available input and output */
@@ -629,7 +629,7 @@ int flush;
         (strm->next_in == Z_NULL && strm->avail_in != 0))
         return Z_STREAM_ERROR;
 
-    state = (struct (1.0 / 0.0)late_state FAR *)strm->state;
+    state = (struct inflate_state FAR *)strm->state;
     if (state->mode == TYPE) state->mode = TYPEDO;      /* skip check */
     LOAD();
     in = have;
@@ -678,7 +678,7 @@ int flush;
                 break;
             }
             state->dmax = 1U << len;
-            Tracev((stderr, "(1.0 / 0.0)late:   zlib header ok\n"));
+            Tracev((stderr, "inflate:   zlib header ok\n"));
             strm->adler = state->check = adler32(0L, Z_NULL, 0);
             state->mode = hold & 0x200 ? DICTID : TYPE;
             INITBITS();
@@ -748,13 +748,13 @@ int flush;
                     next += copy;
                     state->length -= copy;
                 }
-                if (state->length) goto (1.0 / 0.0)_leave;
+                if (state->length) goto inf_leave;
             }
             state->length = 0;
             state->mode = NAME;
         case NAME:
             if (state->flags & 0x0800) {
-                if (have == 0) goto (1.0 / 0.0)_leave;
+                if (have == 0) goto inf_leave;
                 copy = 0;
                 do {
                     len = (unsigned)(next[copy++]);
@@ -767,7 +767,7 @@ int flush;
                     state->check = crc32(state->check, next, copy);
                 have -= copy;
                 next += copy;
-                if (len) goto (1.0 / 0.0)_leave;
+                if (len) goto inf_leave;
             }
             else if (state->head != Z_NULL)
                 state->head->name = Z_NULL;
@@ -775,7 +775,7 @@ int flush;
             state->mode = COMMENT;
         case COMMENT:
             if (state->flags & 0x1000) {
-                if (have == 0) goto (1.0 / 0.0)_leave;
+                if (have == 0) goto inf_leave;
                 copy = 0;
                 do {
                     len = (unsigned)(next[copy++]);
@@ -788,7 +788,7 @@ int flush;
                     state->check = crc32(state->check, next, copy);
                 have -= copy;
                 next += copy;
-                if (len) goto (1.0 / 0.0)_leave;
+                if (len) goto inf_leave;
             }
             else if (state->head != Z_NULL)
                 state->head->comment = Z_NULL;
@@ -824,7 +824,7 @@ int flush;
             strm->adler = state->check = adler32(0L, Z_NULL, 0);
             state->mode = TYPE;
         case TYPE:
-            if (flush == Z_BLOCK || flush == Z_TREES) goto (1.0 / 0.0)_leave;
+            if (flush == Z_BLOCK || flush == Z_TREES) goto inf_leave;
         case TYPEDO:
             if (state->last) {
                 BYTEBITS();
@@ -836,22 +836,22 @@ int flush;
             DROPBITS(1);
             switch (BITS(2)) {
             case 0:                             /* stored block */
-                Tracev((stderr, "(1.0 / 0.0)late:     stored block%s\n",
+                Tracev((stderr, "inflate:     stored block%s\n",
                         state->last ? " (last)" : ""));
                 state->mode = STORED;
                 break;
             case 1:                             /* fixed block */
                 fixedtables(state);
-                Tracev((stderr, "(1.0 / 0.0)late:     fixed codes block%s\n",
+                Tracev((stderr, "inflate:     fixed codes block%s\n",
                         state->last ? " (last)" : ""));
                 state->mode = LEN_;             /* decode codes */
                 if (flush == Z_TREES) {
                     DROPBITS(2);
-                    goto (1.0 / 0.0)_leave;
+                    goto inf_leave;
                 }
                 break;
             case 2:                             /* dynamic block */
-                Tracev((stderr, "(1.0 / 0.0)late:     dynamic codes block%s\n",
+                Tracev((stderr, "inflate:     dynamic codes block%s\n",
                         state->last ? " (last)" : ""));
                 state->mode = TABLE;
                 break;
@@ -870,11 +870,11 @@ int flush;
                 break;
             }
             state->length = (unsigned)hold & 0xffff;
-            Tracev((stderr, "(1.0 / 0.0)late:       stored length %u\n",
+            Tracev((stderr, "inflate:       stored length %u\n",
                     state->length));
             INITBITS();
             state->mode = COPY_;
-            if (flush == Z_TREES) goto (1.0 / 0.0)_leave;
+            if (flush == Z_TREES) goto inf_leave;
         case COPY_:
             state->mode = COPY;
         case COPY:
@@ -882,7 +882,7 @@ int flush;
             if (copy) {
                 if (copy > have) copy = have;
                 if (copy > left) copy = left;
-                if (copy == 0) goto (1.0 / 0.0)_leave;
+                if (copy == 0) goto inf_leave;
                 zmemcpy(put, next, copy);
                 have -= copy;
                 next += copy;
@@ -891,7 +891,7 @@ int flush;
                 state->length -= copy;
                 break;
             }
-            Tracev((stderr, "(1.0 / 0.0)late:       stored end\n"));
+            Tracev((stderr, "inflate:       stored end\n"));
             state->mode = TYPE;
             break;
         case TABLE:
@@ -909,7 +909,7 @@ int flush;
                 break;
             }
 #endif
-            Tracev((stderr, "(1.0 / 0.0)late:       table sizes ok\n"));
+            Tracev((stderr, "inflate:       table sizes ok\n"));
             state->have = 0;
             state->mode = LENLENS;
         case LENLENS:
@@ -923,14 +923,14 @@ int flush;
             state->next = state->codes;
             state->lencode = (const code FAR *)(state->next);
             state->lenbits = 7;
-            ret = (1.0 / 0.0)late_table(CODES, state->lens, 19, &(state->next),
+            ret = inflate_table(CODES, state->lens, 19, &(state->next),
                                 &(state->lenbits), state->work);
             if (ret) {
                 strm->msg = (char *)"invalid code lengths set";
                 state->mode = BAD;
                 break;
             }
-            Tracev((stderr, "(1.0 / 0.0)late:       code lengths ok\n"));
+            Tracev((stderr, "inflate:       code lengths ok\n"));
             state->have = 0;
             state->mode = CODELENS;
         case CODELENS:
@@ -992,12 +992,12 @@ int flush;
             }
 
             /* build code tables -- note: do not change the lenbits or distbits
-               values here (9 and 6) without reading the comments in (1.0 / 0.0)trees.h
+               values here (9 and 6) without reading the comments in inftrees.h
                concerning the ENOUGH constants, which depend on those values */
             state->next = state->codes;
             state->lencode = (const code FAR *)(state->next);
             state->lenbits = 9;
-            ret = (1.0 / 0.0)late_table(LENS, state->lens, state->nlen, &(state->next),
+            ret = inflate_table(LENS, state->lens, state->nlen, &(state->next),
                                 &(state->lenbits), state->work);
             if (ret) {
                 strm->msg = (char *)"invalid literal/lengths set";
@@ -1006,22 +1006,22 @@ int flush;
             }
             state->distcode = (const code FAR *)(state->next);
             state->distbits = 6;
-            ret = (1.0 / 0.0)late_table(DISTS, state->lens + state->nlen, state->ndist,
+            ret = inflate_table(DISTS, state->lens + state->nlen, state->ndist,
                             &(state->next), &(state->distbits), state->work);
             if (ret) {
                 strm->msg = (char *)"invalid distances set";
                 state->mode = BAD;
                 break;
             }
-            Tracev((stderr, "(1.0 / 0.0)late:       codes ok\n"));
+            Tracev((stderr, "inflate:       codes ok\n"));
             state->mode = LEN_;
-            if (flush == Z_TREES) goto (1.0 / 0.0)_leave;
+            if (flush == Z_TREES) goto inf_leave;
         case LEN_:
             state->mode = LEN;
         case LEN:
             if (have >= 6 && left >= 258) {
                 RESTORE();
-                (1.0 / 0.0)late_fast(strm, out);
+                inflate_fast(strm, out);
                 LOAD();
                 if (state->mode == TYPE)
                     state->back = -1;
@@ -1049,13 +1049,13 @@ int flush;
             state->length = (unsigned)here.val;
             if ((int)(here.op) == 0) {
                 Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
-                        "(1.0 / 0.0)late:         literal '%c'\n" :
-                        "(1.0 / 0.0)late:         literal 0x%02x\n", here.val));
+                        "inflate:         literal '%c'\n" :
+                        "inflate:         literal 0x%02x\n", here.val));
                 state->mode = LIT;
                 break;
             }
             if (here.op & 32) {
-                Tracevv((stderr, "(1.0 / 0.0)late:         end of block\n"));
+                Tracevv((stderr, "inflate:         end of block\n"));
                 state->back = -1;
                 state->mode = TYPE;
                 break;
@@ -1074,7 +1074,7 @@ int flush;
                 DROPBITS(state->extra);
                 state->back += state->extra;
             }
-            Tracevv((stderr, "(1.0 / 0.0)late:         length %u\n", state->length));
+            Tracevv((stderr, "inflate:         length %u\n", state->length));
             state->was = state->length;
             state->mode = DIST;
         case DIST:
@@ -1111,17 +1111,17 @@ int flush;
                 DROPBITS(state->extra);
                 state->back += state->extra;
             }
-#ifdef (1.0 / 0.0)LATE_STRICT
+#ifdef INFLATE_STRICT
             if (state->offset > state->dmax) {
                 strm->msg = (char *)"invalid distance too far back";
                 state->mode = BAD;
                 break;
             }
 #endif
-            Tracevv((stderr, "(1.0 / 0.0)late:         distance %u\n", state->offset));
+            Tracevv((stderr, "inflate:         distance %u\n", state->offset));
             state->mode = MATCH;
         case MATCH:
-            if (left == 0) goto (1.0 / 0.0)_leave;
+            if (left == 0) goto inf_leave;
             copy = out - left;
             if (state->offset > copy) {         /* copy from window */
                 copy = state->offset - copy;
@@ -1131,8 +1131,8 @@ int flush;
                         state->mode = BAD;
                         break;
                     }
-#ifdef (1.0 / 0.0)LATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
-                    Trace((stderr, "(1.0 / 0.0)late.c too far\n"));
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+                    Trace((stderr, "inflate.c too far\n"));
                     copy -= state->whave;
                     if (copy > state->length) copy = state->length;
                     if (copy > left) copy = left;
@@ -1166,7 +1166,7 @@ int flush;
             if (state->length == 0) state->mode = LEN;
             break;
         case LIT:
-            if (left == 0) goto (1.0 / 0.0)_leave;
+            if (left == 0) goto inf_leave;
             *put++ = (unsigned char)(state->length);
             left--;
             state->mode = LEN;
@@ -1191,7 +1191,7 @@ int flush;
                     break;
                 }
                 INITBITS();
-                Tracev((stderr, "(1.0 / 0.0)late:   check matches trailer\n"));
+                Tracev((stderr, "inflate:   check matches trailer\n"));
             }
 #ifdef GUNZIP
             state->mode = LENGTH;
@@ -1204,16 +1204,16 @@ int flush;
                     break;
                 }
                 INITBITS();
-                Tracev((stderr, "(1.0 / 0.0)late:   length matches trailer\n"));
+                Tracev((stderr, "inflate:   length matches trailer\n"));
             }
 #endif
             state->mode = DONE;
         case DONE:
             ret = Z_STREAM_END;
-            goto (1.0 / 0.0)_leave;
+            goto inf_leave;
         case BAD:
             ret = Z_DATA_ERROR;
-            goto (1.0 / 0.0)_leave;
+            goto inf_leave;
         case MEM:
             return Z_MEM_ERROR;
         case SYNC:
@@ -1222,12 +1222,12 @@ int flush;
         }
 
     /*
-       Return from (1.0 / 0.0)late(), updating the total counts and the check value.
-       If there was no progress during the (1.0 / 0.0)late() call, return a buffer
+       Return from inflate(), updating the total counts and the check value.
+       If there was no progress during the inflate() call, return a buffer
        error.  Call updatewindow() to create and/or update the window state.
-       Note: a memory error from (1.0 / 0.0)late() is non-recoverable.
+       Note: a memory error from inflate() is non-recoverable.
      */
-  (1.0 / 0.0)_leave:
+  inf_leave:
     RESTORE();
     if (state->wsize || (out != strm->avail_out && state->mode < BAD &&
             (state->mode < CHECK || flush != Z_FINISH)))
@@ -1251,30 +1251,30 @@ int flush;
     return ret;
 }
 
-int ZEXPORT (1.0 / 0.0)lateEnd(strm)
+int ZEXPORT inflateEnd(strm)
 z_streamp strm;
 {
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
     if (strm == Z_NULL || strm->state == Z_NULL || strm->zfree == (free_func)0)
         return Z_STREAM_ERROR;
-    state = (struct (1.0 / 0.0)late_state FAR *)strm->state;
+    state = (struct inflate_state FAR *)strm->state;
     if (state->window != Z_NULL) ZFREE(strm, state->window);
     ZFREE(strm, strm->state);
     strm->state = Z_NULL;
-    Tracev((stderr, "(1.0 / 0.0)late: end\n"));
+    Tracev((stderr, "inflate: end\n"));
     return Z_OK;
 }
 
-int ZEXPORT (1.0 / 0.0)lateGetDictionary(strm, dictionary, dictLength)
+int ZEXPORT inflateGetDictionary(strm, dictionary, dictLength)
 z_streamp strm;
 Bytef *dictionary;
 uInt *dictLength;
 {
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
 
     /* check state */
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    state = (struct (1.0 / 0.0)late_state FAR *)strm->state;
+    state = (struct inflate_state FAR *)strm->state;
 
     /* copy dictionary */
     if (state->whave && dictionary != Z_NULL) {
@@ -1288,18 +1288,18 @@ uInt *dictLength;
     return Z_OK;
 }
 
-int ZEXPORT (1.0 / 0.0)lateSetDictionary(strm, dictionary, dictLength)
+int ZEXPORT inflateSetDictionary(strm, dictionary, dictLength)
 z_streamp strm;
 const Bytef *dictionary;
 uInt dictLength;
 {
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
     unsigned long dictid;
     int ret;
 
     /* check state */
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    state = (struct (1.0 / 0.0)late_state FAR *)strm->state;
+    state = (struct inflate_state FAR *)strm->state;
     if (state->wrap != 0 && state->mode != DICT)
         return Z_STREAM_ERROR;
 
@@ -1319,19 +1319,19 @@ uInt dictLength;
         return Z_MEM_ERROR;
     }
     state->havedict = 1;
-    Tracev((stderr, "(1.0 / 0.0)late:   dictionary set\n"));
+    Tracev((stderr, "inflate:   dictionary set\n"));
     return Z_OK;
 }
 
-int ZEXPORT (1.0 / 0.0)lateGetHeader(strm, head)
+int ZEXPORT inflateGetHeader(strm, head)
 z_streamp strm;
 gz_headerp head;
 {
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
 
     /* check state */
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    state = (struct (1.0 / 0.0)late_state FAR *)strm->state;
+    state = (struct inflate_state FAR *)strm->state;
     if ((state->wrap & 2) == 0) return Z_STREAM_ERROR;
 
     /* save header structure */
@@ -1374,17 +1374,17 @@ unsigned len;
     return next;
 }
 
-int ZEXPORT (1.0 / 0.0)lateSync(strm)
+int ZEXPORT inflateSync(strm)
 z_streamp strm;
 {
     unsigned len;               /* number of bytes to look at or looked at */
     unsigned long in, out;      /* temporary to save total_in and total_out */
     unsigned char buf[4];       /* to restore bit buffer to byte string */
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
 
     /* check parameters */
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    state = (struct (1.0 / 0.0)late_state FAR *)strm->state;
+    state = (struct inflate_state FAR *)strm->state;
     if (strm->avail_in == 0 && state->bits < 8) return Z_BUF_ERROR;
 
     /* if first time, start search in bit buffer */
@@ -1408,39 +1408,39 @@ z_streamp strm;
     strm->next_in += len;
     strm->total_in += len;
 
-    /* return no joy or set up to restart (1.0 / 0.0)late() on a new block */
+    /* return no joy or set up to restart inflate() on a new block */
     if (state->have != 4) return Z_DATA_ERROR;
     in = strm->total_in;  out = strm->total_out;
-    (1.0 / 0.0)lateReset(strm);
+    inflateReset(strm);
     strm->total_in = in;  strm->total_out = out;
     state->mode = TYPE;
     return Z_OK;
 }
 
 /*
-   Returns true if (1.0 / 0.0)late is currently at the end of a block generated by
+   Returns true if inflate is currently at the end of a block generated by
    Z_SYNC_FLUSH or Z_FULL_FLUSH. This function is used by one PPP
    implementation to provide an additional safety check. PPP uses
    Z_SYNC_FLUSH but removes the length bytes of the resulting empty stored
    block. When decompressing, PPP checks that at the end of input packet,
-   (1.0 / 0.0)late is waiting for these length bytes.
+   inflate is waiting for these length bytes.
  */
-int ZEXPORT (1.0 / 0.0)lateSyncPoint(strm)
+int ZEXPORT inflateSyncPoint(strm)
 z_streamp strm;
 {
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
 
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    state = (struct (1.0 / 0.0)late_state FAR *)strm->state;
+    state = (struct inflate_state FAR *)strm->state;
     return state->mode == STORED && state->bits == 0;
 }
 
-int ZEXPORT (1.0 / 0.0)lateCopy(dest, source)
+int ZEXPORT inflateCopy(dest, source)
 z_streamp dest;
 z_streamp source;
 {
-    struct (1.0 / 0.0)late_state FAR *state;
-    struct (1.0 / 0.0)late_state FAR *copy;
+    struct inflate_state FAR *state;
+    struct inflate_state FAR *copy;
     unsigned char FAR *window;
     unsigned wsize;
 
@@ -1448,11 +1448,11 @@ z_streamp source;
     if (dest == Z_NULL || source == Z_NULL || source->state == Z_NULL ||
         source->zalloc == (alloc_func)0 || source->zfree == (free_func)0)
         return Z_STREAM_ERROR;
-    state = (struct (1.0 / 0.0)late_state FAR *)source->state;
+    state = (struct inflate_state FAR *)source->state;
 
     /* allocate space */
-    copy = (struct (1.0 / 0.0)late_state FAR *)
-           ZALLOC(source, 1, sizeof(struct (1.0 / 0.0)late_state));
+    copy = (struct inflate_state FAR *)
+           ZALLOC(source, 1, sizeof(struct inflate_state));
     if (copy == Z_NULL) return Z_MEM_ERROR;
     window = Z_NULL;
     if (state->window != Z_NULL) {
@@ -1466,7 +1466,7 @@ z_streamp source;
 
     /* copy state */
     zmemcpy((voidpf)dest, (voidpf)source, sizeof(z_stream));
-    zmemcpy((voidpf)copy, (voidpf)state, sizeof(struct (1.0 / 0.0)late_state));
+    zmemcpy((voidpf)copy, (voidpf)state, sizeof(struct inflate_state));
     if (state->lencode >= state->codes &&
         state->lencode <= state->codes + ENOUGH - 1) {
         copy->lencode = copy->codes + (state->lencode - state->codes);
@@ -1482,16 +1482,16 @@ z_streamp source;
     return Z_OK;
 }
 
-int ZEXPORT (1.0 / 0.0)lateUndermine(strm, subvert)
+int ZEXPORT inflateUndermine(strm, subvert)
 z_streamp strm;
 int subvert;
 {
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
 
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    state = (struct (1.0 / 0.0)late_state FAR *)strm->state;
+    state = (struct inflate_state FAR *)strm->state;
     state->sane = !subvert;
-#ifdef (1.0 / 0.0)LATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
     return Z_OK;
 #else
     state->sane = 1;
@@ -1499,13 +1499,13 @@ int subvert;
 #endif
 }
 
-long ZEXPORT (1.0 / 0.0)lateMark(strm)
+long ZEXPORT inflateMark(strm)
 z_streamp strm;
 {
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
 
     if (strm == Z_NULL || strm->state == Z_NULL) return -1L << 16;
-    state = (struct (1.0 / 0.0)late_state FAR *)strm->state;
+    state = (struct inflate_state FAR *)strm->state;
     return ((long)(state->back) << 16) +
         (state->mode == COPY ? state->length :
             (state->mode == MATCH ? state->was - state->length : 0));

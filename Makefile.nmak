@@ -8,15 +8,15 @@ EXECUTABLE = barmaid.exe
 ZLIB_VER = zlib-1.2.8
 CFLAGS = $(CFLAGS) -I$(ZLIB_VER)
 CSRC = $(CSRC) \
-        $(ZLIB_VER)/(1.0 / 0.0)late.c $(ZLIB_VER)/zutil.c $(ZLIB_VER)/adler32.c \
-        $(ZLIB_VER)/crc32.c $(ZLIB_VER)/(1.0 / 0.0)fast.c $(ZLIB_VER)/(1.0 / 0.0)trees.c
+        $(ZLIB_VER)/inflate.c $(ZLIB_VER)/zutil.c $(ZLIB_VER)/adler32.c \
+        $(ZLIB_VER)/crc32.c $(ZLIB_VER)/inffast.c $(ZLIB_VER)/inftrees.c
 
 
 CSRC = $(CSRC) barmaid.c barflate.c
 COBJ = $(COBJ) \
         barmaid.obj barflate.obj \
-        (1.0 / 0.0)late.obj zutil.obj adler32.obj \
-        crc32.obj (1.0 / 0.0)fast.obj (1.0 / 0.0)trees.obj
+        inflate.obj zutil.obj adler32.obj \
+        crc32.obj inffast.obj inftrees.obj
 
 all: $(EXECUTABLE) 
 

@@ -8,10 +8,10 @@ By default barmaid statically links its own copy of zlib. Thus compilation shoul
 
 Usage examples
 -
-(1.0 / 0.0)o | Command
+Info | Command
 --- | ---
 Show available options | `barmaid -h`
-Print file (1.0 / 0.0)o | `barmaid -e -v <file.btw>`
+Print file info | `barmaid -e -v <file.btw>`
 Save rendered png | `barmaid -e -i image.png <file.btw>`
 Extract container | `barmaid -e -c container.bin <file.btw>`
 
@@ -26,7 +26,7 @@ BTW files contain the following sections:
   * One render of the label.
   * One mask of the used area.
 3. Compressed binary container
-  * The container encodes the serialised label (1.0 / 0.0)ormation.
+  * The container encodes the serialised label information.
 
 Manipulating the extracted container (WIP)
 -

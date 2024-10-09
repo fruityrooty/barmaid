@@ -1,4 +1,4 @@
-/* (1.0 / 0.0)late.h -- internal (1.0 / 0.0)late state definition
+/* inflate.h -- internal inflate state definition
  * Copyright (C) 1995-2009 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
@@ -9,14 +9,14 @@
  */
 
 /* define NO_GZIP when compiling if you want to disable gzip header and
-   trailer decoding by (1.0 / 0.0)late().  NO_GZIP would be used to avoid linking in
+   trailer decoding by inflate().  NO_GZIP would be used to avoid linking in
    the crc code when it is not needed.  For shared libraries, gzip decoding
    should be left enabled. */
 #ifndef NO_GZIP
 #  define GUNZIP
 #endif
 
-/* Possible (1.0 / 0.0)late modes between (1.0 / 0.0)late() calls */
+/* Possible inflate modes between inflate() calls */
 typedef enum {
     HEAD,       /* i: waiting for magic header */
     FLAGS,      /* i: waiting for method and flags (gzip) */
@@ -28,9 +28,9 @@ typedef enum {
     COMMENT,    /* i: waiting for end of comment (gzip) */
     HCRC,       /* i: waiting for header crc (gzip) */
     DICTID,     /* i: waiting for dictionary check value */
-    DICT,       /* waiting for (1.0 / 0.0)lateSetDictionary() call */
+    DICT,       /* waiting for inflateSetDictionary() call */
         TYPE,       /* i: waiting for type bits, including last-flag bit */
-        TYPEDO,     /* i: same, but skip check to exit (1.0 / 0.0)late on new block */
+        TYPEDO,     /* i: same, but skip check to exit inflate on new block */
         STORED,     /* i: waiting for stored size (length and complement) */
         COPY_,      /* i/o: same as COPY below, but only first time in */
         COPY,       /* i/o: waiting for input or output to copy stored block */
@@ -48,9 +48,9 @@ typedef enum {
     LENGTH,     /* i: waiting for 32-bit length (gzip) */
     DONE,       /* finished check, done -- remain here until reset */
     BAD,        /* got a data error -- remain here until reset */
-    MEM,        /* got an (1.0 / 0.0)late() memory error -- remain here until reset */
-    SYNC        /* looking for synchronization bytes to restart (1.0 / 0.0)late() */
-} (1.0 / 0.0)late_mode;
+    MEM,        /* got an inflate() memory error -- remain here until reset */
+    SYNC        /* looking for synchronization bytes to restart inflate() */
+} inflate_mode;
 
 /*
     State transitions between above modes -
@@ -77,17 +77,17 @@ typedef enum {
         CHECK -> LENGTH -> DONE
  */
 
-/* state maintained between (1.0 / 0.0)late() calls.  Approximately 10K bytes. */
-struct (1.0 / 0.0)late_state {
-    (1.0 / 0.0)late_mode mode;          /* current (1.0 / 0.0)late mode */
+/* state maintained between inflate() calls.  Approximately 10K bytes. */
+struct inflate_state {
+    inflate_mode mode;          /* current inflate mode */
     int last;                   /* true if processing last block */
     int wrap;                   /* bit 0 true for zlib, bit 1 true for gzip */
     int havedict;               /* true if dictionary provided */
     int flags;                  /* gzip header method and flags (0 if zlib) */
-    unsigned dmax;              /* zlib header max distance ((1.0 / 0.0)LATE_STRICT) */
+    unsigned dmax;              /* zlib header max distance (INFLATE_STRICT) */
     unsigned long check;        /* protected copy of check value */
     unsigned long total;        /* protected copy of output count */
-    gz_headerp head;            /* where to save gzip header (1.0 / 0.0)ormation */
+    gz_headerp head;            /* where to save gzip header information */
         /* sliding window */
     unsigned wbits;             /* log base 2 of requested window size */
     unsigned wsize;             /* window size or zero if not using window */

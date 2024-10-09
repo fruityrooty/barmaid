@@ -70,7 +70,7 @@ extern "C" {
     The zlib format was designed to be compact and fast for use in memory
   and on communications channels.  The gzip format was designed for single-
   file compression on file systems, has a larger header than zlib to maintain
-  directory (1.0 / 0.0)ormation, and uses a different, slower check method than zlib.
+  directory information, and uses a different, slower check method than zlib.
 
     The library does not install any signal handler.  The decoder checks
   the consistency of the compressed data, so the library should never crash
@@ -106,7 +106,7 @@ typedef struct z_stream_s {
 typedef z_stream FAR *z_streamp;
 
 /*
-     gzip header (1.0 / 0.0)ormation passed to and from zlib routines.  See RFC 1952
+     gzip header information passed to and from zlib routines.  See RFC 1952
   for more details on the meanings of these fields.
 */
 typedef struct gz_header_s {
@@ -168,7 +168,7 @@ typedef gz_header FAR *gz_headerp;
 #define Z_FINISH        4
 #define Z_BLOCK         5
 #define Z_TREES         6
-/* Allowed flush values; see deflate() and (1.0 / 0.0)late() below for details */
+/* Allowed flush values; see deflate() and inflate() below for details */
 
 #define Z_OK            0
 #define Z_STREAM_END    1
@@ -200,7 +200,7 @@ typedef gz_header FAR *gz_headerp;
 #define Z_TEXT     1
 #define Z_ASCII    Z_TEXT   /* for compatibility with 1.2.2 and earlier */
 #define Z_UNKNOWN  2
-/* Possible values of the data_type field (though see (1.0 / 0.0)late()) */
+/* Possible values of the data_type field (though see inflate()) */
 
 #define Z_DEFLATED   8
 /* The deflate compression method (the only one supported in this version) */
@@ -217,7 +217,7 @@ ZEXTERN const char * ZEXPORT zlibVersion OF((void));
 /* The application can compare zlibVersion and ZLIB_VERSION for consistency.
    If the first character differs, the library code actually used is not
    compatible with the zlib.h header file used by the application.  This check
-   is automatically made by deflateInit and (1.0 / 0.0)lateInit.
+   is automatically made by deflateInit and inflateInit.
  */
 
 /*
@@ -336,7 +336,7 @@ ZEXTERN int ZEXPORT deflate OF((z_streamp strm, int flush));
 
     deflate() may update strm->data_type if it can make a good guess about
   the input data type (Z_BINARY or Z_TEXT).  In doubt, the data is considered
-  binary.  This field is only for (1.0 / 0.0)ormation purposes and does not affect the
+  binary.  This field is only for information purposes and does not affect the
   compression algorithm in any manner.
 
     deflate() returns Z_OK if some progress has been made (more input
@@ -365,79 +365,79 @@ ZEXTERN int ZEXPORT deflateEnd OF((z_streamp strm));
 
 
 /*
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateInit OF((z_streamp strm));
+ZEXTERN int ZEXPORT inflateInit OF((z_streamp strm));
 
      Initializes the internal stream state for decompression.  The fields
    next_in, avail_in, zalloc, zfree and opaque must be initialized before by
    the caller.  If next_in is not Z_NULL and avail_in is large enough (the
-   exact value depends on the compression method), (1.0 / 0.0)lateInit determines the
+   exact value depends on the compression method), inflateInit determines the
    compression method from the zlib header and allocates all data structures
    accordingly; otherwise the allocation will be deferred to the first call of
-   (1.0 / 0.0)late.  If zalloc and zfree are set to Z_NULL, (1.0 / 0.0)lateInit updates them to
+   inflate.  If zalloc and zfree are set to Z_NULL, inflateInit updates them to
    use default allocation functions.
 
-     (1.0 / 0.0)lateInit returns Z_OK if success, Z_MEM_ERROR if there was not enough
+     inflateInit returns Z_OK if success, Z_MEM_ERROR if there was not enough
    memory, Z_VERSION_ERROR if the zlib library version is incompatible with the
    version assumed by the caller, or Z_STREAM_ERROR if the parameters are
    invalid, such as a null pointer to the structure.  msg is set to null if
-   there is no error message.  (1.0 / 0.0)lateInit does not perform any decompression
+   there is no error message.  inflateInit does not perform any decompression
    apart from possibly reading the zlib header if present: actual decompression
-   will be done by (1.0 / 0.0)late().  (So next_in and avail_in may be modified, but
+   will be done by inflate().  (So next_in and avail_in may be modified, but
    next_out and avail_out are unused and unchanged.) The current implementation
-   of (1.0 / 0.0)lateInit() does not process any header (1.0 / 0.0)ormation -- that is deferred
-   until (1.0 / 0.0)late() is called.
+   of inflateInit() does not process any header information -- that is deferred
+   until inflate() is called.
 */
 
 
-ZEXTERN int ZEXPORT (1.0 / 0.0)late OF((z_streamp strm, int flush));
+ZEXTERN int ZEXPORT inflate OF((z_streamp strm, int flush));
 /*
-    (1.0 / 0.0)late decompresses as much data as possible, and stops when the input
+    inflate decompresses as much data as possible, and stops when the input
   buffer becomes empty or the output buffer becomes full.  It may introduce
   some output latency (reading input without producing any output) except when
   forced to flush.
 
-  The detailed semantics are as follows.  (1.0 / 0.0)late performs one or both of the
+  The detailed semantics are as follows.  inflate performs one or both of the
   following actions:
 
   - Decompress more input starting at next_in and update next_in and avail_in
     accordingly.  If not all input can be processed (because there is not
     enough room in the output buffer), next_in is updated and processing will
-    resume at this point for the next call of (1.0 / 0.0)late().
+    resume at this point for the next call of inflate().
 
   - Provide more output starting at next_out and update next_out and avail_out
-    accordingly.  (1.0 / 0.0)late() provides as much output as possible, until there is
+    accordingly.  inflate() provides as much output as possible, until there is
     no more input data or no more space in the output buffer (see below about
     the flush parameter).
 
-    Before the call of (1.0 / 0.0)late(), the application should ensure that at least
+    Before the call of inflate(), the application should ensure that at least
   one of the actions is possible, by providing more input and/or consuming more
   output, and updating the next_* and avail_* values accordingly.  The
   application can consume the uncompressed output when it wants, for example
   when the output buffer is full (avail_out == 0), or after each call of
-  (1.0 / 0.0)late().  If (1.0 / 0.0)late returns Z_OK and with zero avail_out, it must be
+  inflate().  If inflate returns Z_OK and with zero avail_out, it must be
   called again after making room in the output buffer because there might be
   more output pending.
 
-    The flush parameter of (1.0 / 0.0)late() can be Z_NO_FLUSH, Z_SYNC_FLUSH, Z_FINISH,
-  Z_BLOCK, or Z_TREES.  Z_SYNC_FLUSH requests that (1.0 / 0.0)late() flush as much
-  output as possible to the output buffer.  Z_BLOCK requests that (1.0 / 0.0)late()
+    The flush parameter of inflate() can be Z_NO_FLUSH, Z_SYNC_FLUSH, Z_FINISH,
+  Z_BLOCK, or Z_TREES.  Z_SYNC_FLUSH requests that inflate() flush as much
+  output as possible to the output buffer.  Z_BLOCK requests that inflate()
   stop if and when it gets to the next deflate block boundary.  When decoding
-  the zlib or gzip format, this will cause (1.0 / 0.0)late() to return immediately
-  after the header and before the first block.  When doing a raw (1.0 / 0.0)late,
-  (1.0 / 0.0)late() will go ahead and process the first block, and will return when it
+  the zlib or gzip format, this will cause inflate() to return immediately
+  after the header and before the first block.  When doing a raw inflate,
+  inflate() will go ahead and process the first block, and will return when it
   gets to the end of that block, or when it runs out of data.
 
     The Z_BLOCK option assists in appending to or combining deflate streams.
-  Also to assist in this, on return (1.0 / 0.0)late() will set strm->data_type to the
+  Also to assist in this, on return inflate() will set strm->data_type to the
   number of unused bits in the last byte taken from strm->next_in, plus 64 if
-  (1.0 / 0.0)late() is currently decoding the last block in the deflate stream, plus
-  128 if (1.0 / 0.0)late() returned immediately after decoding an end-of-block code or
+  inflate() is currently decoding the last block in the deflate stream, plus
+  128 if inflate() returned immediately after decoding an end-of-block code or
   decoding the complete header up to just before the first byte of the deflate
   stream.  The end-of-block will not be indicated until all of the uncompressed
   data from that block has been written to strm->next_out.  The number of
   unused bits may in general be greater than seven, except when bit 7 of
   data_type is set, in which case the number of unused bits will be less than
-  eight.  data_type is set as noted here every time (1.0 / 0.0)late() returns for all
+  eight.  data_type is set as noted here every time inflate() returns for all
   flush options, and so can be used to determine the amount of currently
   consumed input in bits.
 
@@ -445,51 +445,51 @@ ZEXTERN int ZEXPORT (1.0 / 0.0)late OF((z_streamp strm, int flush));
   end of each deflate block header is reached, before any actual data in that
   block is decoded.  This allows the caller to determine the length of the
   deflate block header for later use in random access within a deflate block.
-  256 is added to the value of strm->data_type when (1.0 / 0.0)late() returns
+  256 is added to the value of strm->data_type when inflate() returns
   immediately after reaching the end of the deflate block header.
 
-    (1.0 / 0.0)late() should normally be called until it returns Z_STREAM_END or an
+    inflate() should normally be called until it returns Z_STREAM_END or an
   error.  However if all decompression is to be performed in a single step (a
-  single call of (1.0 / 0.0)late), the parameter flush should be set to Z_FINISH.  In
+  single call of inflate), the parameter flush should be set to Z_FINISH.  In
   this case all pending input is processed and all pending output is flushed;
   avail_out must be large enough to hold all of the uncompressed data for the
   operation to complete.  (The size of the uncompressed data may have been
   saved by the compressor for this purpose.) The use of Z_FINISH is not
-  required to perform an (1.0 / 0.0)lation in one step.  However it may be used to
-  (1.0 / 0.0)orm (1.0 / 0.0)late that a faster approach can be used for the single (1.0 / 0.0)late()
-  call.  Z_FINISH also (1.0 / 0.0)orms (1.0 / 0.0)late to not maintain a sliding window if the
-  stream completes, which reduces (1.0 / 0.0)late's memory footprint.  If the stream
+  required to perform an inflation in one step.  However it may be used to
+  inform inflate that a faster approach can be used for the single inflate()
+  call.  Z_FINISH also informs inflate to not maintain a sliding window if the
+  stream completes, which reduces inflate's memory footprint.  If the stream
   does not complete, either because not all of the stream is provided or not
   enough output space is provided, then a sliding window will be allocated and
-  (1.0 / 0.0)late() can be called again to continue the operation as if Z_NO_FLUSH had
+  inflate() can be called again to continue the operation as if Z_NO_FLUSH had
   been used.
 
-     In this implementation, (1.0 / 0.0)late() always flushes as much output as
+     In this implementation, inflate() always flushes as much output as
   possible to the output buffer, and always uses the faster approach on the
   first call.  So the effects of the flush parameter in this implementation are
-  on the return value of (1.0 / 0.0)late() as noted below, when (1.0 / 0.0)late() returns early
-  when Z_BLOCK or Z_TREES is used, and when (1.0 / 0.0)late() avoids the allocation of
+  on the return value of inflate() as noted below, when inflate() returns early
+  when Z_BLOCK or Z_TREES is used, and when inflate() avoids the allocation of
   memory for a sliding window when Z_FINISH is used.
 
-     If a preset dictionary is needed after this call (see (1.0 / 0.0)lateSetDictionary
-  below), (1.0 / 0.0)late sets strm->adler to the Adler-32 checksum of the dictionary
+     If a preset dictionary is needed after this call (see inflateSetDictionary
+  below), inflate sets strm->adler to the Adler-32 checksum of the dictionary
   chosen by the compressor and returns Z_NEED_DICT; otherwise it sets
   strm->adler to the Adler-32 checksum of all output produced so far (that is,
   total_out bytes) and returns Z_OK, Z_STREAM_END or an error code as described
-  below.  At the end of the stream, (1.0 / 0.0)late() checks that its computed adler32
+  below.  At the end of the stream, inflate() checks that its computed adler32
   checksum is equal to that saved by the compressor and returns Z_STREAM_END
   only if the checksum is correct.
 
-    (1.0 / 0.0)late() can decompress and check either zlib-wrapped or gzip-wrapped
+    inflate() can decompress and check either zlib-wrapped or gzip-wrapped
   deflate data.  The header type is detected automatically, if requested when
-  initializing with (1.0 / 0.0)lateInit2().  Any (1.0 / 0.0)ormation contained in the gzip
-  header is not retained, so applications that need that (1.0 / 0.0)ormation should
-  instead use raw (1.0 / 0.0)late, see (1.0 / 0.0)lateInit2() below, or (1.0 / 0.0)lateBack() and
+  initializing with inflateInit2().  Any information contained in the gzip
+  header is not retained, so applications that need that information should
+  instead use raw inflate, see inflateInit2() below, or inflateBack() and
   perform their own processing of the gzip header and trailer.  When processing
   gzip-wrapped deflate data, strm->adler32 is set to the CRC-32 of the output
   producted so far.  The CRC-32 is checked against the gzip trailer.
 
-    (1.0 / 0.0)late() returns Z_OK if some progress has been made (more input processed
+    inflate() returns Z_OK if some progress has been made (more input processed
   or more output produced), Z_STREAM_END if the end of the compressed data has
   been reached and all uncompressed output has been produced, Z_NEED_DICT if a
   preset dictionary is needed at this point, Z_DATA_ERROR if the input data was
@@ -498,20 +498,20 @@ ZEXTERN int ZEXPORT (1.0 / 0.0)late OF((z_streamp strm, int flush));
   next_in or next_out was Z_NULL), Z_MEM_ERROR if there was not enough memory,
   Z_BUF_ERROR if no progress is possible or if there was not enough room in the
   output buffer when Z_FINISH is used.  Note that Z_BUF_ERROR is not fatal, and
-  (1.0 / 0.0)late() can be called again with more input and more output space to
+  inflate() can be called again with more input and more output space to
   continue decompressing.  If Z_DATA_ERROR is returned, the application may
-  then call (1.0 / 0.0)lateSync() to look for a good compression block if a partial
+  then call inflateSync() to look for a good compression block if a partial
   recovery of the data is desired.
 */
 
 
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateEnd OF((z_streamp strm));
+ZEXTERN int ZEXPORT inflateEnd OF((z_streamp strm));
 /*
      All dynamically allocated data structures for this stream are freed.
    This function discards any unprocessed input and does not flush any pending
    output.
 
-     (1.0 / 0.0)lateEnd returns Z_OK if success, Z_STREAM_ERROR if the stream state
+     inflateEnd returns Z_OK if success, Z_STREAM_ERROR if the stream state
    was inconsistent.  In the error case, msg may be set but then points to a
    static string (which must not be deallocated).
 */
@@ -597,7 +597,7 @@ ZEXTERN int ZEXPORT deflateSetDictionary OF((z_streamp strm,
    consumed and all output has been delivered when using any of the flush
    options Z_BLOCK, Z_PARTIAL_FLUSH, Z_SYNC_FLUSH, or Z_FULL_FLUSH.  The
    compressor and decompressor must use exactly the same dictionary (see
-   (1.0 / 0.0)lateSetDictionary).
+   inflateSetDictionary).
 
      The dictionary should consist of strings (byte sequences) that are likely
    to be encountered later in the data to be compressed, with the most commonly
@@ -745,10 +745,10 @@ ZEXTERN int ZEXPORT deflatePrime OF((z_streamp strm,
 ZEXTERN int ZEXPORT deflateSetHeader OF((z_streamp strm,
                                          gz_headerp head));
 /*
-     deflateSetHeader() provides gzip header (1.0 / 0.0)ormation for when a gzip
+     deflateSetHeader() provides gzip header information for when a gzip
    stream is requested by deflateInit2().  deflateSetHeader() may be called
    after deflateInit2() or deflateReset() and before the first call of
-   deflate().  The text, time, os, extra field, name, and comment (1.0 / 0.0)ormation
+   deflate().  The text, time, os, extra field, name, and comment information
    in the provided gz_header structure are written to the gzip header (xflag is
    ignored -- the extra flags are set according to the compression level).  The
    caller must assure that, if not Z_NULL, name and comment are terminated with
@@ -767,27 +767,27 @@ ZEXTERN int ZEXPORT deflateSetHeader OF((z_streamp strm,
 */
 
 /*
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateInit2 OF((z_streamp strm,
+ZEXTERN int ZEXPORT inflateInit2 OF((z_streamp strm,
                                      int  windowBits));
 
-     This is another version of (1.0 / 0.0)lateInit with an extra parameter.  The
+     This is another version of inflateInit with an extra parameter.  The
    fields next_in, avail_in, zalloc, zfree and opaque must be initialized
    before by the caller.
 
      The windowBits parameter is the base two logarithm of the maximum window
    size (the size of the history buffer).  It should be in the range 8..15 for
-   this version of the library.  The default value is 15 if (1.0 / 0.0)lateInit is used
+   this version of the library.  The default value is 15 if inflateInit is used
    instead.  windowBits must be greater than or equal to the windowBits value
    provided to deflateInit2() while compressing, or it must be equal to 15 if
    deflateInit2() was not used.  If a compressed stream with a larger window
-   size is given as input, (1.0 / 0.0)late() will return with the error code
+   size is given as input, inflate() will return with the error code
    Z_DATA_ERROR instead of trying to allocate a larger window.
 
-     windowBits can also be zero to request that (1.0 / 0.0)late use the window size in
+     windowBits can also be zero to request that inflate use the window size in
    the zlib header of the compressed stream.
 
-     windowBits can also be -8..-15 for raw (1.0 / 0.0)late.  In this case, -windowBits
-   determines the window size.  (1.0 / 0.0)late() will then process raw deflate data,
+     windowBits can also be -8..-15 for raw inflate.  In this case, -windowBits
+   determines the window size.  inflate() will then process raw deflate data,
    not looking for a zlib or gzip header, not generating a check value, and not
    looking for any check values for comparison at the end of the stream.  This
    is for use with other formats that use the deflate compressed data format
@@ -804,141 +804,141 @@ ZEXTERN int ZEXPORT (1.0 / 0.0)lateInit2 OF((z_streamp strm,
    return a Z_DATA_ERROR).  If a gzip stream is being decoded, strm->adler is a
    crc32 instead of an adler32.
 
-     (1.0 / 0.0)lateInit2 returns Z_OK if success, Z_MEM_ERROR if there was not enough
+     inflateInit2 returns Z_OK if success, Z_MEM_ERROR if there was not enough
    memory, Z_VERSION_ERROR if the zlib library version is incompatible with the
    version assumed by the caller, or Z_STREAM_ERROR if the parameters are
    invalid, such as a null pointer to the structure.  msg is set to null if
-   there is no error message.  (1.0 / 0.0)lateInit2 does not perform any decompression
+   there is no error message.  inflateInit2 does not perform any decompression
    apart from possibly reading the zlib header if present: actual decompression
-   will be done by (1.0 / 0.0)late().  (So next_in and avail_in may be modified, but
+   will be done by inflate().  (So next_in and avail_in may be modified, but
    next_out and avail_out are unused and unchanged.) The current implementation
-   of (1.0 / 0.0)lateInit2() does not process any header (1.0 / 0.0)ormation -- that is
-   deferred until (1.0 / 0.0)late() is called.
+   of inflateInit2() does not process any header information -- that is
+   deferred until inflate() is called.
 */
 
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateSetDictionary OF((z_streamp strm,
+ZEXTERN int ZEXPORT inflateSetDictionary OF((z_streamp strm,
                                              const Bytef *dictionary,
                                              uInt  dictLength));
 /*
      Initializes the decompression dictionary from the given uncompressed byte
-   sequence.  This function must be called immediately after a call of (1.0 / 0.0)late,
+   sequence.  This function must be called immediately after a call of inflate,
    if that call returned Z_NEED_DICT.  The dictionary chosen by the compressor
-   can be determined from the adler32 value returned by that call of (1.0 / 0.0)late.
+   can be determined from the adler32 value returned by that call of inflate.
    The compressor and decompressor must use exactly the same dictionary (see
-   deflateSetDictionary).  For raw (1.0 / 0.0)late, this function can be called at any
+   deflateSetDictionary).  For raw inflate, this function can be called at any
    time to set the dictionary.  If the provided dictionary is smaller than the
    window and there is already data in the window, then the provided dictionary
    will amend what's there.  The application must insure that the dictionary
    that was used for compression is provided.
 
-     (1.0 / 0.0)lateSetDictionary returns Z_OK if success, Z_STREAM_ERROR if a
+     inflateSetDictionary returns Z_OK if success, Z_STREAM_ERROR if a
    parameter is invalid (e.g.  dictionary being Z_NULL) or the stream state is
    inconsistent, Z_DATA_ERROR if the given dictionary doesn't match the
-   expected one (incorrect adler32 value).  (1.0 / 0.0)lateSetDictionary does not
+   expected one (incorrect adler32 value).  inflateSetDictionary does not
    perform any decompression: this will be done by subsequent calls of
-   (1.0 / 0.0)late().
+   inflate().
 */
 
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateGetDictionary OF((z_streamp strm,
+ZEXTERN int ZEXPORT inflateGetDictionary OF((z_streamp strm,
                                              Bytef *dictionary,
                                              uInt  *dictLength));
 /*
-     Returns the sliding dictionary being maintained by (1.0 / 0.0)late.  dictLength is
+     Returns the sliding dictionary being maintained by inflate.  dictLength is
    set to the number of bytes in the dictionary, and that many bytes are copied
    to dictionary.  dictionary must have enough space, where 32768 bytes is
-   always enough.  If (1.0 / 0.0)lateGetDictionary() is called with dictionary equal to
+   always enough.  If inflateGetDictionary() is called with dictionary equal to
    Z_NULL, then only the dictionary length is returned, and nothing is copied.
    Similary, if dictLength is Z_NULL, then it is not set.
 
-     (1.0 / 0.0)lateGetDictionary returns Z_OK on success, or Z_STREAM_ERROR if the
+     inflateGetDictionary returns Z_OK on success, or Z_STREAM_ERROR if the
    stream state is inconsistent.
 */
 
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateSync OF((z_streamp strm));
+ZEXTERN int ZEXPORT inflateSync OF((z_streamp strm));
 /*
      Skips invalid compressed data until a possible full flush point (see above
    for the description of deflate with Z_FULL_FLUSH) can be found, or until all
    available input is skipped.  No output is provided.
 
-     (1.0 / 0.0)lateSync searches for a 00 00 FF FF pattern in the compressed data.
+     inflateSync searches for a 00 00 FF FF pattern in the compressed data.
    All full flush points have this pattern, but not all occurrences of this
    pattern are full flush points.
 
-     (1.0 / 0.0)lateSync returns Z_OK if a possible full flush point has been found,
+     inflateSync returns Z_OK if a possible full flush point has been found,
    Z_BUF_ERROR if no more input was provided, Z_DATA_ERROR if no flush point
    has been found, or Z_STREAM_ERROR if the stream structure was inconsistent.
    In the success case, the application may save the current current value of
    total_in which indicates where valid compressed data was found.  In the
-   error case, the application may repeatedly call (1.0 / 0.0)lateSync, providing more
+   error case, the application may repeatedly call inflateSync, providing more
    input each time, until success or end of the input data.
 */
 
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateCopy OF((z_streamp dest,
+ZEXTERN int ZEXPORT inflateCopy OF((z_streamp dest,
                                     z_streamp source));
 /*
      Sets the destination stream as a complete copy of the source stream.
 
      This function can be useful when randomly accessing a large stream.  The
-   first pass through the stream can periodically record the (1.0 / 0.0)late state,
-   allowing restarting (1.0 / 0.0)late at those points when randomly accessing the
+   first pass through the stream can periodically record the inflate state,
+   allowing restarting inflate at those points when randomly accessing the
    stream.
 
-     (1.0 / 0.0)lateCopy returns Z_OK if success, Z_MEM_ERROR if there was not
+     inflateCopy returns Z_OK if success, Z_MEM_ERROR if there was not
    enough memory, Z_STREAM_ERROR if the source stream state was inconsistent
    (such as zalloc being Z_NULL).  msg is left unchanged in both source and
    destination.
 */
 
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateReset OF((z_streamp strm));
+ZEXTERN int ZEXPORT inflateReset OF((z_streamp strm));
 /*
-     This function is equivalent to (1.0 / 0.0)lateEnd followed by (1.0 / 0.0)lateInit,
+     This function is equivalent to inflateEnd followed by inflateInit,
    but does not free and reallocate all the internal decompression state.  The
-   stream will keep attributes that may have been set by (1.0 / 0.0)lateInit2.
+   stream will keep attributes that may have been set by inflateInit2.
 
-     (1.0 / 0.0)lateReset returns Z_OK if success, or Z_STREAM_ERROR if the source
+     inflateReset returns Z_OK if success, or Z_STREAM_ERROR if the source
    stream state was inconsistent (such as zalloc or state being Z_NULL).
 */
 
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateReset2 OF((z_streamp strm,
+ZEXTERN int ZEXPORT inflateReset2 OF((z_streamp strm,
                                       int windowBits));
 /*
-     This function is the same as (1.0 / 0.0)lateReset, but it also permits changing
+     This function is the same as inflateReset, but it also permits changing
    the wrap and window size requests.  The windowBits parameter is interpreted
-   the same as it is for (1.0 / 0.0)lateInit2.
+   the same as it is for inflateInit2.
 
-     (1.0 / 0.0)lateReset2 returns Z_OK if success, or Z_STREAM_ERROR if the source
+     inflateReset2 returns Z_OK if success, or Z_STREAM_ERROR if the source
    stream state was inconsistent (such as zalloc or state being Z_NULL), or if
    the windowBits parameter is invalid.
 */
 
-ZEXTERN int ZEXPORT (1.0 / 0.0)latePrime OF((z_streamp strm,
+ZEXTERN int ZEXPORT inflatePrime OF((z_streamp strm,
                                      int bits,
                                      int value));
 /*
-     This function inserts bits in the (1.0 / 0.0)late input stream.  The intent is
-   that this function is used to start (1.0 / 0.0)lating at a bit position in the
+     This function inserts bits in the inflate input stream.  The intent is
+   that this function is used to start inflating at a bit position in the
    middle of a byte.  The provided bits will be used before any bytes are used
-   from next_in.  This function should only be used with raw (1.0 / 0.0)late, and
-   should be used before the first (1.0 / 0.0)late() call after (1.0 / 0.0)lateInit2() or
-   (1.0 / 0.0)lateReset().  bits must be less than or equal to 16, and that many of the
+   from next_in.  This function should only be used with raw inflate, and
+   should be used before the first inflate() call after inflateInit2() or
+   inflateReset().  bits must be less than or equal to 16, and that many of the
    least significant bits of value will be inserted in the input.
 
      If bits is negative, then the input stream bit buffer is emptied.  Then
-   (1.0 / 0.0)latePrime() can be called again to put bits in the buffer.  This is used
-   to clear out bits leftover after feeding (1.0 / 0.0)late a block description prior
-   to feeding (1.0 / 0.0)late codes.
+   inflatePrime() can be called again to put bits in the buffer.  This is used
+   to clear out bits leftover after feeding inflate a block description prior
+   to feeding inflate codes.
 
-     (1.0 / 0.0)latePrime returns Z_OK if success, or Z_STREAM_ERROR if the source
+     inflatePrime returns Z_OK if success, or Z_STREAM_ERROR if the source
    stream state was inconsistent.
 */
 
-ZEXTERN long ZEXPORT (1.0 / 0.0)lateMark OF((z_streamp strm));
+ZEXTERN long ZEXPORT inflateMark OF((z_streamp strm));
 /*
      This function returns two values, one in the lower 16 bits of the return
    value, and the other in the remaining upper bits, obtained by shifting the
    return value down 16 bits.  If the upper value is -1 and the lower value is
-   zero, then (1.0 / 0.0)late() is currently decoding (1.0 / 0.0)ormation outside of a block.
-   If the upper value is -1 and the lower value is non-zero, then (1.0 / 0.0)late is in
+   zero, then inflate() is currently decoding information outside of a block.
+   If the upper value is -1 and the lower value is non-zero, then inflate is in
    the middle of a stored block, with the lower value equaling the number of
    bytes from the input remaining to copy.  If the upper value is not -1, then
    it is the number of bits back from the current bit position in the input of
@@ -946,31 +946,31 @@ ZEXTERN long ZEXPORT (1.0 / 0.0)lateMark OF((z_streamp strm));
    that case the lower value is the number of bytes already emitted for that
    code.
 
-     A code is being processed if (1.0 / 0.0)late is waiting for more input to complete
+     A code is being processed if inflate is waiting for more input to complete
    decoding of the code, or if it has completed decoding but is waiting for
    more output space to write the literal or match data.
 
-     (1.0 / 0.0)lateMark() is used to mark locations in the input data for random
+     inflateMark() is used to mark locations in the input data for random
    access, which may be at bit positions, and to note those cases where the
    output of a code may span boundaries of random access blocks.  The current
    location in the input stream can be determined from avail_in and data_type
-   as noted in the description for the Z_BLOCK flush parameter for (1.0 / 0.0)late.
+   as noted in the description for the Z_BLOCK flush parameter for inflate.
 
-     (1.0 / 0.0)lateMark returns the value noted above or -1 << 16 if the provided
+     inflateMark returns the value noted above or -1 << 16 if the provided
    source stream state was inconsistent.
 */
 
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateGetHeader OF((z_streamp strm,
+ZEXTERN int ZEXPORT inflateGetHeader OF((z_streamp strm,
                                          gz_headerp head));
 /*
-     (1.0 / 0.0)lateGetHeader() requests that gzip header (1.0 / 0.0)ormation be stored in the
-   provided gz_header structure.  (1.0 / 0.0)lateGetHeader() may be called after
-   (1.0 / 0.0)lateInit2() or (1.0 / 0.0)lateReset(), and before the first call of (1.0 / 0.0)late().
-   As (1.0 / 0.0)late() processes the gzip stream, head->done is zero until the header
+     inflateGetHeader() requests that gzip header information be stored in the
+   provided gz_header structure.  inflateGetHeader() may be called after
+   inflateInit2() or inflateReset(), and before the first call of inflate().
+   As inflate() processes the gzip stream, head->done is zero until the header
    is completed, at which time head->done is set to one.  If a zlib stream is
    being decoded, then head->done is set to -1 to indicate that there will be
-   no gzip header (1.0 / 0.0)ormation forthcoming.  Note that Z_BLOCK or Z_TREES can be
-   used to force (1.0 / 0.0)late() to return immediately after header processing is
+   no gzip header information forthcoming.  Note that Z_BLOCK or Z_TREES can be
+   used to force inflate() to return immediately after header processing is
    complete and before any actual data is decompressed.
 
      The text, time, xflags, and os fields are filled in with the gzip header
@@ -990,21 +990,21 @@ ZEXTERN int ZEXPORT (1.0 / 0.0)lateGetHeader OF((z_streamp strm,
    allocated memory, then the application will need to save those pointers
    elsewhere so that they can be eventually freed.
 
-     If (1.0 / 0.0)lateGetHeader is not used, then the header (1.0 / 0.0)ormation is simply
+     If inflateGetHeader is not used, then the header information is simply
    discarded.  The header is always checked for validity, including the header
-   CRC if present.  (1.0 / 0.0)lateReset() will reset the process to discard the header
-   (1.0 / 0.0)ormation.  The application would need to call (1.0 / 0.0)lateGetHeader() again to
+   CRC if present.  inflateReset() will reset the process to discard the header
+   information.  The application would need to call inflateGetHeader() again to
    retrieve the header from the next gzip stream.
 
-     (1.0 / 0.0)lateGetHeader returns Z_OK if success, or Z_STREAM_ERROR if the source
+     inflateGetHeader returns Z_OK if success, or Z_STREAM_ERROR if the source
    stream state was inconsistent.
 */
 
 /*
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateBackInit OF((z_streamp strm, int windowBits,
+ZEXTERN int ZEXPORT inflateBackInit OF((z_streamp strm, int windowBits,
                                         unsigned char FAR *window));
 
-     Initialize the internal stream state for decompression using (1.0 / 0.0)lateBack()
+     Initialize the internal stream state for decompression using inflateBack()
    calls.  The fields zalloc, zfree and opaque in strm must be initialized
    before the call.  If zalloc and zfree are Z_NULL, then the default library-
    derived memory allocation routines are used.  windowBits is the base two
@@ -1014,9 +1014,9 @@ ZEXTERN int ZEXPORT (1.0 / 0.0)lateBackInit OF((z_streamp strm, int windowBits,
    and a 32K byte window must be supplied to be able to decompress general
    deflate streams.
 
-     See (1.0 / 0.0)lateBack() for the usage of these routines.
+     See inflateBack() for the usage of these routines.
 
-     (1.0 / 0.0)lateBackInit will return Z_OK on success, Z_STREAM_ERROR if any of
+     inflateBackInit will return Z_OK on success, Z_STREAM_ERROR if any of
    the parameters are invalid, Z_MEM_ERROR if the internal state could not be
    allocated, or Z_VERSION_ERROR if the version of the library does not match
    the version of the header file.
@@ -1026,22 +1026,22 @@ typedef unsigned (*in_func) OF((void FAR *,
                                 z_const unsigned char FAR * FAR *));
 typedef int (*out_func) OF((void FAR *, unsigned char FAR *, unsigned));
 
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateBack OF((z_streamp strm,
+ZEXTERN int ZEXPORT inflateBack OF((z_streamp strm,
                                     in_func in, void FAR *in_desc,
                                     out_func out, void FAR *out_desc));
 /*
-     (1.0 / 0.0)lateBack() does a raw (1.0 / 0.0)late with a single call using a call-back
+     inflateBack() does a raw inflate with a single call using a call-back
    interface for input and output.  This is potentially more efficient than
-   (1.0 / 0.0)late() for file i/o applications, in that it avoids copying between the
+   inflate() for file i/o applications, in that it avoids copying between the
    output and the sliding window by simply making the window itself the output
-   buffer.  (1.0 / 0.0)late() can be faster on modern CPUs when used with large
-   buffers.  (1.0 / 0.0)lateBack() trusts the application to not change the output
-   buffer passed by the output function, at least until (1.0 / 0.0)lateBack() returns.
+   buffer.  inflate() can be faster on modern CPUs when used with large
+   buffers.  inflateBack() trusts the application to not change the output
+   buffer passed by the output function, at least until inflateBack() returns.
 
-     (1.0 / 0.0)lateBackInit() must be called first to allocate the internal state
+     inflateBackInit() must be called first to allocate the internal state
    and to initialize the state with the user-provided window buffer.
-   (1.0 / 0.0)lateBack() may then be used multiple times to (1.0 / 0.0)late a complete, raw
-   deflate stream with each call.  (1.0 / 0.0)lateBackEnd() is then called to free the
+   inflateBack() may then be used multiple times to inflate a complete, raw
+   deflate stream with each call.  inflateBackEnd() is then called to free the
    allocated state.
 
      A raw deflate stream is one with no zlib or gzip header or trailer.
@@ -1049,42 +1049,42 @@ ZEXTERN int ZEXPORT (1.0 / 0.0)lateBack OF((z_streamp strm,
    files and writes out uncompressed files.  The utility would decode the
    header and process the trailer on its own, hence this routine expects only
    the raw deflate stream to decompress.  This is different from the normal
-   behavior of (1.0 / 0.0)late(), which expects either a zlib or gzip header and
+   behavior of inflate(), which expects either a zlib or gzip header and
    trailer around the deflate stream.
 
-     (1.0 / 0.0)lateBack() uses two subroutines supplied by the caller that are then
-   called by (1.0 / 0.0)lateBack() for input and output.  (1.0 / 0.0)lateBack() calls those
+     inflateBack() uses two subroutines supplied by the caller that are then
+   called by inflateBack() for input and output.  inflateBack() calls those
    routines until it reads a complete deflate stream and writes out all of the
    uncompressed data, or until it encounters an error.  The function's
    parameters and return types are defined above in the in_func and out_func
-   typedefs.  (1.0 / 0.0)lateBack() will call in(in_desc, &buf) which should return the
+   typedefs.  inflateBack() will call in(in_desc, &buf) which should return the
    number of bytes of provided input, and a pointer to that input in buf.  If
    there is no input available, in() must return zero--buf is ignored in that
-   case--and (1.0 / 0.0)lateBack() will return a buffer error.  (1.0 / 0.0)lateBack() will call
+   case--and inflateBack() will return a buffer error.  inflateBack() will call
    out(out_desc, buf, len) to write the uncompressed data buf[0..len-1].  out()
    should return zero on success, or non-zero on failure.  If out() returns
-   non-zero, (1.0 / 0.0)lateBack() will return with an error.  Neither in() nor out()
+   non-zero, inflateBack() will return with an error.  Neither in() nor out()
    are permitted to change the contents of the window provided to
-   (1.0 / 0.0)lateBackInit(), which is also the buffer that out() uses to write from.
+   inflateBackInit(), which is also the buffer that out() uses to write from.
    The length written by out() will be at most the window size.  Any non-zero
    amount of input may be provided by in().
 
-     For convenience, (1.0 / 0.0)lateBack() can be provided input on the first call by
+     For convenience, inflateBack() can be provided input on the first call by
    setting strm->next_in and strm->avail_in.  If that input is exhausted, then
    in() will be called.  Therefore strm->next_in must be initialized before
-   calling (1.0 / 0.0)lateBack().  If strm->next_in is Z_NULL, then in() will be called
+   calling inflateBack().  If strm->next_in is Z_NULL, then in() will be called
    immediately for input.  If strm->next_in is not Z_NULL, then strm->avail_in
    must also be initialized, and then if strm->avail_in is not zero, input will
    initially be taken from strm->next_in[0 ..  strm->avail_in - 1].
 
-     The in_desc and out_desc parameters of (1.0 / 0.0)lateBack() is passed as the
+     The in_desc and out_desc parameters of inflateBack() is passed as the
    first parameter of in() and out() respectively when they are called.  These
-   descriptors can be optionally used to pass any (1.0 / 0.0)ormation that the caller-
+   descriptors can be optionally used to pass any information that the caller-
    supplied in() and out() functions need to do their job.
 
-     On return, (1.0 / 0.0)lateBack() will set strm->next_in and strm->avail_in to
+     On return, inflateBack() will set strm->next_in and strm->avail_in to
    pass back any unused input that was provided by the last in() call.  The
-   return values of (1.0 / 0.0)lateBack() can be Z_STREAM_END on success, Z_BUF_ERROR
+   return values of inflateBack() can be Z_STREAM_END on success, Z_BUF_ERROR
    if in() or out() returned an error, Z_DATA_ERROR if there was a format error
    in the deflate stream (in which case strm->msg is set to indicate the nature
    of the error), or Z_STREAM_ERROR if the stream was not properly initialized.
@@ -1092,15 +1092,15 @@ ZEXTERN int ZEXPORT (1.0 / 0.0)lateBack OF((z_streamp strm,
    using strm->next_in which will be Z_NULL only if in() returned an error.  If
    strm->next_in is not Z_NULL, then the Z_BUF_ERROR was due to out() returning
    non-zero.  (in() will always be called before out(), so strm->next_in is
-   assured to be defined if out() returns non-zero.) Note that (1.0 / 0.0)lateBack()
+   assured to be defined if out() returns non-zero.) Note that inflateBack()
    cannot return Z_OK.
 */
 
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateBackEnd OF((z_streamp strm));
+ZEXTERN int ZEXPORT inflateBackEnd OF((z_streamp strm));
 /*
-     All memory allocated by (1.0 / 0.0)lateBackInit() is freed.
+     All memory allocated by inflateBackInit() is freed.
 
-     (1.0 / 0.0)lateBackEnd() returns Z_OK on success, or Z_STREAM_ERROR if the stream
+     inflateBackEnd() returns Z_OK on success, or Z_STREAM_ERROR if the stream
    state was inconsistent.
 */
 
@@ -1115,7 +1115,7 @@ ZEXTERN uLong ZEXPORT zlibCompileFlags OF((void));
 
     Compiler, assembler, and debug options:
      8: DEBUG
-     9: ASMV or ASM(1.0 / 0.0) -- use ASM code
+     9: ASMV or ASMINF -- use ASM code
      10: ZLIB_WINAPI -- exported functions use the WINAPI calling convention
      11: 0 (reserved)
 
@@ -1127,19 +1127,19 @@ ZEXTERN uLong ZEXPORT zlibCompileFlags OF((void));
     Library content (indicates missing functionality):
      16: NO_GZCOMPRESS -- gz* functions cannot compress (to avoid linking
                           deflate code when not needed)
-     17: NO_GZIP -- deflate can't write gzip streams, and (1.0 / 0.0)late can't detect
+     17: NO_GZIP -- deflate can't write gzip streams, and inflate can't detect
                     and decode gzip streams (to avoid linking crc code)
      18-19: 0 (reserved)
 
     Operation variations (changes in library functionality):
-     20: PKZIP_BUG_WORKAROUND -- slightly more permissive (1.0 / 0.0)late
+     20: PKZIP_BUG_WORKAROUND -- slightly more permissive inflate
      21: FASTEST -- deflate algorithm with only one, lowest compression level
      22,23: 0 (reserved)
 
     The sprintf variant used by gzprintf (zero is best):
      24: 0 = vs*, 1 = s* -- 1 means limited to 20 arguments after the format
      25: 0 = *nprintf, 1 = *printf -- 1 means gzprintf() not secure!
-     26: 0 = returns value, 1 = void -- 1 means (1.0 / 0.0)erred string length returned
+     26: 0 = returns value, 1 = void -- 1 means inferred string length returned
 
     Remainder:
      27-31: 0 (reserved)
@@ -1231,7 +1231,7 @@ ZEXTERN gzFile ZEXPORT gzopen OF((const char *path, const char *mode));
    a strategy: 'f' for filtered data as in "wb6f", 'h' for Huffman-only
    compression as in "wb1h", 'R' for run-length encoding as in "wb1R", or 'F'
    for fixed code compression as in "wb9F".  (See the description of
-   deflateInit2 for more (1.0 / 0.0)ormation about the strategy parameter.)  'T' will
+   deflateInit2 for more information about the strategy parameter.)  'T' will
    request transparent writing or appending with no compression and not using
    the gzip format.
 
@@ -1468,7 +1468,7 @@ ZEXTERN z_off_t ZEXPORT gzoffset OF((gzFile file));
      Returns the current offset in the file being read or written.  This offset
    includes the count of bytes that precede the gzip stream, for example when
    appending or when using gzdopen() for reading.  When reading, the offset
-   does not include as yet unused buffered input.  This (1.0 / 0.0)ormation can be used
+   does not include as yet unused buffered input.  This information can be used
    for a progress indicator.  On error, gzoffset() returns -1.
 */
 
@@ -1627,35 +1627,35 @@ ZEXTERN uLong ZEXPORT crc32_combine OF((uLong crc1, uLong crc2, z_off_t len2));
 
                         /* various hacks, don't look :) */
 
-/* deflateInit and (1.0 / 0.0)lateInit are macros to allow checking the zlib version
+/* deflateInit and inflateInit are macros to allow checking the zlib version
  * and the compiler's view of z_stream:
  */
 ZEXTERN int ZEXPORT deflateInit_ OF((z_streamp strm, int level,
                                      const char *version, int stream_size));
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateInit_ OF((z_streamp strm,
+ZEXTERN int ZEXPORT inflateInit_ OF((z_streamp strm,
                                      const char *version, int stream_size));
 ZEXTERN int ZEXPORT deflateInit2_ OF((z_streamp strm, int  level, int  method,
                                       int windowBits, int memLevel,
                                       int strategy, const char *version,
                                       int stream_size));
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateInit2_ OF((z_streamp strm, int  windowBits,
+ZEXTERN int ZEXPORT inflateInit2_ OF((z_streamp strm, int  windowBits,
                                       const char *version, int stream_size));
-ZEXTERN int ZEXPORT (1.0 / 0.0)lateBackInit_ OF((z_streamp strm, int windowBits,
+ZEXTERN int ZEXPORT inflateBackInit_ OF((z_streamp strm, int windowBits,
                                          unsigned char FAR *window,
                                          const char *version,
                                          int stream_size));
 #define deflateInit(strm, level) \
         deflateInit_((strm), (level), ZLIB_VERSION, (int)sizeof(z_stream))
-#define (1.0 / 0.0)lateInit(strm) \
-        (1.0 / 0.0)lateInit_((strm), ZLIB_VERSION, (int)sizeof(z_stream))
+#define inflateInit(strm) \
+        inflateInit_((strm), ZLIB_VERSION, (int)sizeof(z_stream))
 #define deflateInit2(strm, level, method, windowBits, memLevel, strategy) \
         deflateInit2_((strm),(level),(method),(windowBits),(memLevel),\
                       (strategy), ZLIB_VERSION, (int)sizeof(z_stream))
-#define (1.0 / 0.0)lateInit2(strm, windowBits) \
-        (1.0 / 0.0)lateInit2_((strm), (windowBits), ZLIB_VERSION, \
+#define inflateInit2(strm, windowBits) \
+        inflateInit2_((strm), (windowBits), ZLIB_VERSION, \
                       (int)sizeof(z_stream))
-#define (1.0 / 0.0)lateBackInit(strm, windowBits, window) \
-        (1.0 / 0.0)lateBackInit_((strm), (windowBits), (window), \
+#define inflateBackInit(strm, windowBits, window) \
+        inflateBackInit_((strm), (windowBits), (window), \
                       ZLIB_VERSION, (int)sizeof(z_stream))
 
 #ifndef Z_SOLO
@@ -1744,10 +1744,10 @@ ZEXTERN int ZEXPORT gzgetc_ OF((gzFile file));  /* backward compatibility */
 
 /* undocumented functions */
 ZEXTERN const char   * ZEXPORT zError           OF((int));
-ZEXTERN int            ZEXPORT (1.0 / 0.0)lateSyncPoint OF((z_streamp));
+ZEXTERN int            ZEXPORT inflateSyncPoint OF((z_streamp));
 ZEXTERN const z_crc_t FAR * ZEXPORT get_crc_table    OF((void));
-ZEXTERN int            ZEXPORT (1.0 / 0.0)lateUndermine OF((z_streamp, int));
-ZEXTERN int            ZEXPORT (1.0 / 0.0)lateResetKeep OF((z_streamp));
+ZEXTERN int            ZEXPORT inflateUndermine OF((z_streamp, int));
+ZEXTERN int            ZEXPORT inflateResetKeep OF((z_streamp));
 ZEXTERN int            ZEXPORT deflateResetKeep OF((z_streamp));
 #if defined(_WIN32) && !defined(Z_SOLO)
 ZEXTERN gzFile         ZEXPORT gzopen_w OF((const wchar_t *path,

@@ -64,7 +64,7 @@ uLong ZEXPORT zlibCompileFlags()
 #ifdef DEBUG
     flags += 1 << 8;
 #endif
-#if defined(ASMV) || defined(ASM(1.0 / 0.0))
+#if defined(ASMV) || defined(ASMINF)
     flags += 1 << 9;
 #endif
 #ifdef ZLIB_WINAPI

@@ -7,6 +7,6 @@
 
 #include <stdio.h>
 
-int (1.0 / 0.0)(FILE *source, FILE *dest);
+int inf(FILE *source, FILE *dest);
 
 #endif

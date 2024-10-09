@@ -1,14 +1,14 @@
-/* (1.0 / 0.0)fast.c -- fast decoding
+/* inffast.c -- fast decoding
  * Copyright (C) 1995-2008, 2010, 2013 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
 #include "zutil.h"
-#include "(1.0 / 0.0)trees.h"
-#include "(1.0 / 0.0)late.h"
-#include "(1.0 / 0.0)fast.h"
+#include "inftrees.h"
+#include "inflate.h"
+#include "inffast.h"
 
-#ifndef ASM(1.0 / 0.0)
+#ifndef ASMINF
 
 /* Allow machine dependent optimization for post-increment or pre-increment.
    Based on testing to date,
@@ -33,9 +33,9 @@
    Decode literal, length, and distance codes and write out the resulting
    literal and match bytes until either not enough input or output is
    available, an end-of-block is encountered, or a data error is encountered.
-   When large enough input and output buffers are supplied to (1.0 / 0.0)late(), for
+   When large enough input and output buffers are supplied to inflate(), for
    example, a 16K input buffer and a 64K output buffer, more than 95% of the
-   (1.0 / 0.0)late execution time is spent in this routine.
+   inflate execution time is spent in this routine.
 
    Entry assumptions:
 
@@ -48,7 +48,7 @@
    On return, state->mode is one of:
 
         LEN -- ran out of enough output space or enough available input
-        TYPE -- reached end of block code, (1.0 / 0.0)late() to interpret next block
+        TYPE -- reached end of block code, inflate() to interpret next block
         BAD -- error in block data
 
    Notes:
@@ -60,21 +60,21 @@
       checking for available input while decoding.
 
     - The maximum bytes that a single length/distance pair can output is 258
-      bytes, which is the maximum length that can be coded.  (1.0 / 0.0)late_fast()
+      bytes, which is the maximum length that can be coded.  inflate_fast()
       requires strm->avail_out >= 258 for each loop to avoid checking for
       output space.
  */
-void ZLIB_INTERNAL (1.0 / 0.0)late_fast(strm, start)
+void ZLIB_INTERNAL inflate_fast(strm, start)
 z_streamp strm;
-unsigned start;         /* (1.0 / 0.0)late()'s starting value for strm->avail_out */
+unsigned start;         /* inflate()'s starting value for strm->avail_out */
 {
-    struct (1.0 / 0.0)late_state FAR *state;
+    struct inflate_state FAR *state;
     z_const unsigned char FAR *in;      /* local strm->next_in */
     z_const unsigned char FAR *last;    /* have enough input while in < last */
     unsigned char FAR *out;     /* local strm->next_out */
-    unsigned char FAR *beg;     /* (1.0 / 0.0)late()'s initial strm->next_out */
+    unsigned char FAR *beg;     /* inflate()'s initial strm->next_out */
     unsigned char FAR *end;     /* while out < end, enough space available */
-#ifdef (1.0 / 0.0)LATE_STRICT
+#ifdef INFLATE_STRICT
     unsigned dmax;              /* maximum distance from zlib header */
 #endif
     unsigned wsize;             /* window size or zero if not using window */
@@ -95,13 +95,13 @@ unsigned start;         /* (1.0 / 0.0)late()'s starting value for strm->avail_ou
     unsigned char FAR *from;    /* where to copy match from */
 
     /* copy state to local variables */
-    state = (struct (1.0 / 0.0)late_state FAR *)strm->state;
+    state = (struct inflate_state FAR *)strm->state;
     in = strm->next_in - OFF;
     last = in + (strm->avail_in - 5);
     out = strm->next_out - OFF;
     beg = out - (start - strm->avail_out);
     end = out + (strm->avail_out - 257);
-#ifdef (1.0 / 0.0)LATE_STRICT
+#ifdef INFLATE_STRICT
     dmax = state->dmax;
 #endif
     wsize = state->wsize;
@@ -132,8 +132,8 @@ unsigned start;         /* (1.0 / 0.0)late()'s starting value for strm->avail_ou
         op = (unsigned)(here.op);
         if (op == 0) {                          /* literal */
             Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
-                    "(1.0 / 0.0)late:         literal '%c'\n" :
-                    "(1.0 / 0.0)late:         literal 0x%02x\n", here.val));
+                    "inflate:         literal '%c'\n" :
+                    "inflate:         literal 0x%02x\n", here.val));
             PUP(out) = (unsigned char)(here.val);
         }
         else if (op & 16) {                     /* length base */
@@ -148,7 +148,7 @@ unsigned start;         /* (1.0 / 0.0)late()'s starting value for strm->avail_ou
                 hold >>= op;
                 bits -= op;
             }
-            Tracevv((stderr, "(1.0 / 0.0)late:         length %u\n", len));
+            Tracevv((stderr, "inflate:         length %u\n", len));
             if (bits < 15) {
                 hold += (unsigned long)(PUP(in)) << bits;
                 bits += 8;
@@ -173,7 +173,7 @@ unsigned start;         /* (1.0 / 0.0)late()'s starting value for strm->avail_ou
                     }
                 }
                 dist += (unsigned)hold & ((1U << op) - 1);
-#ifdef (1.0 / 0.0)LATE_STRICT
+#ifdef INFLATE_STRICT
                 if (dist > dmax) {
                     strm->msg = (char *)"invalid distance too far back";
                     state->mode = BAD;
@@ -182,7 +182,7 @@ unsigned start;         /* (1.0 / 0.0)late()'s starting value for strm->avail_ou
 #endif
                 hold >>= op;
                 bits -= op;
-                Tracevv((stderr, "(1.0 / 0.0)late:         distance %u\n", dist));
+                Tracevv((stderr, "inflate:         distance %u\n", dist));
                 op = (unsigned)(out - beg);     /* max distance in output */
                 if (dist > op) {                /* see if copy from window */
                     op = dist - op;             /* distance back in window */
@@ -193,7 +193,7 @@ unsigned start;         /* (1.0 / 0.0)late()'s starting value for strm->avail_ou
                             state->mode = BAD;
                             break;
                         }
-#ifdef (1.0 / 0.0)LATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
                         if (len <= op - whave) {
                             do {
                                 PUP(out) = 0;
@@ -295,7 +295,7 @@ unsigned start;         /* (1.0 / 0.0)late()'s starting value for strm->avail_ou
             goto dolen;
         }
         else if (op & 32) {                     /* end-of-block */
-            Tracevv((stderr, "(1.0 / 0.0)late:         end of block\n"));
+            Tracevv((stderr, "inflate:         end of block\n"));
             state->mode = TYPE;
             break;
         }
@@ -324,7 +324,7 @@ unsigned start;         /* (1.0 / 0.0)late()'s starting value for strm->avail_ou
 }
 
 /*
-   (1.0 / 0.0)late_fast() speedups that turned out slower (on a PowerPC G3 750CXe):
+   inflate_fast() speedups that turned out slower (on a PowerPC G3 750CXe):
    - Using bit fields for code structure
    - Different op definition to avoid & for extra bits (do & for table bits)
    - Three separate decoding do-loops for direct, window, and wnext == 0
@@ -337,4 +337,4 @@ unsigned start;         /* (1.0 / 0.0)late()'s starting value for strm->avail_ou
    - Moving len -= 3 statement into middle of loop
  */
 
-#endif /* !ASM(1.0 / 0.0) */
+#endif /* !ASMINF */
